@@ -567,8 +567,7 @@ function ck3DrawHeightmap() {
 
 
 function ck3DrawBiomes() {
-
-  const biomes = $("#biomes").cloneNode();
+  const biomes = document.getElementById("biomes").cloneNode();
 
   const cells = pack.cells,
     vertices = pack.vertices,
@@ -594,12 +593,12 @@ function ck3DrawBiomes() {
 
   paths.forEach(function (d, i) {
     if (d.length < 10) return;
-    biomes
-      .append("path")
-      .attr("d", d)
-      .attr("fill", biomesData.color[i])
-      .attr("stroke", biomesData.color[i])
-      .attr("id", "biome" + i);
+    var e = document.createElement("path");
+    d.setAttribute("d", d);
+    d.setAttribute("fill", biomesData.color[i]);
+    d.setAttribute("stroke", biomesData.color[i]);
+    d.setAttribute("id", "biome" + i);
+    biomes.appendChild(e);
   });
 
   // connect vertices to chain
@@ -634,7 +633,7 @@ function wrapInSvg(element) {
   var defs = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode();
   var filters = document.getElementById("filters")
   defs.appendChild(filters);
-  
+
   var deftemp = document.getElementById("deftemp").cloneNode();
   var maskLand = document.getElementById("land").cloneNode(true);
   var maskWater = document.getElementById("water").cloneNode(true);
