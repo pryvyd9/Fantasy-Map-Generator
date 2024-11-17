@@ -594,10 +594,10 @@ function ck3DrawBiomes() {
   paths.forEach(function (d, i) {
     if (d.length < 10) return;
     var e = document.createElement("path");
-    d.setAttribute("d", d);
-    d.setAttribute("fill", biomesData.color[i]);
-    d.setAttribute("stroke", biomesData.color[i]);
-    d.setAttribute("id", "biome" + i);
+    e.setAttribute("d", d);
+    e.setAttribute("fill", biomesData.color[i]);
+    e.setAttribute("stroke", biomesData.color[i]);
+    e.setAttribute("id", "biome" + i);
     biomes.appendChild(e);
   });
 
