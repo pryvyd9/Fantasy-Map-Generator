@@ -478,9 +478,9 @@ function createHeightmap() {
     const {cells, vertices} = pack;
     const used = new Uint8Array(cells.i.length);
 
-    const skip = +land.attr("skip") + 1 || 1;
-    const relax = +land.attr("relax") || 0;
-    lineGen.curve(d3[land.attr("curve") || "curveBasisClosed"]);
+    const skip = +land.getAttribute("skip") + 1 || 1;
+    const relax = +land.getAttribute("relax") || 0;
+    lineGen.curve(d3[land.getAttribute("curve") || "curveBasisClosed"]);
 
     let currentLayer = 20;
     const heights = Array.from(cells.i).sort((a, b) => cells.h[a] - cells.h[b]);
@@ -506,41 +506,24 @@ function createHeightmap() {
     const group = land;
     const scheme = getColorScheme(group.attr("scheme"));
 
-    if (height === 0 && renderOceanCells) {
-      // draw base ocean layer
-      group
-        .append("rect")
-        .attr("x", 0)
-        .attr("y", 0)
-        .attr("width", graphWidth)
-        .attr("height", graphHeight)
-        .attr("fill", scheme(1));
-    }
-
     if (height === 20) {
       // draw base land layer
-      group
-        .append("rect")
-        .attr("x", 0)
-        .attr("y", 0)
-        .attr("width", graphWidth)
-        .attr("height", graphHeight)
-        .attr("fill", scheme(0.8));
+      const e = createElement("rect");
+      e.setAttribute("x", 0);
+      e.setAttribute("y", 0);
+      e.setAttribute("width", graphWidth);
+      e.setAttribute("height", graphHeight);
+      e.setAttribute("fill", scheme(0.8));
+      group.appendChild(e);
     }
 
     if (paths[height] && paths[height].length >= 10) {
-      const terracing = group.attr("terracing") / 10 || 0;
       const color = getColor(height, scheme);
-
-      if (terracing) {
-        group
-          .append("path")
-          .attr("d", paths[height])
-          .attr("transform", "translate(.7,1.4)")
-          .attr("fill", d3.color(color).darker(terracing))
-          .attr("data-height", height);
-      }
-      group.append("path").attr("d", paths[height]).attr("fill", color).attr("data-height", height);
+      const e = createElement("path");
+      e.setAttribute("d", paths[height]);
+      e.setAttribute("fill", color);
+      e.setAttribute("data-height", height);
+      group.appendChild(e);
     }
   }
 
