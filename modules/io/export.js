@@ -563,7 +563,10 @@ function ck3DrawHeightmap() {
 
   TIME && console.timeEnd("drawHeightmap");
 
-  return land;
+  var svg = document.getElementById("map").cloneNode();
+  svg.removeAttribute("id");
+  svg.appendChild(land);
+  return svg;
 }
 
 function saveCK3() {
