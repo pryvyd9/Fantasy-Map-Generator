@@ -629,25 +629,22 @@ function ck3DrawBiomes() {
 }
 
 function wrapInSvg(element) {
-  var svg = $("#map").cloneNode();
-  svg.removeAttr("id");
-  var defs = $("#map").find("defs")[0].cloneNode();
-  var filters = $("filters").cloneNode(true);
-  defs.append(filters);
-  var deftemp = $("deftemp").cloneNode();
-  var maskLand = deftemp.find("#land").cloneNode(true);
-  var maskWater = deftemp.find("#water").cloneNode(true);
-  deftemp.append(maskLand).append(maskWater);
-  defs.append(deftemp);
+  var svg = document.getElementById("map").cloneNode();
+  svg.removeAttribute("id");
+  var defs = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode();
+  var filters = document.getElementById("filters")
+  defs.appendChild(filters);
+  
+  var deftemp = document.getElementById("deftemp").cloneNode();
+  var maskLand = document.getElementById("land").cloneNode(true);
+  var maskWater = document.getElementById("water").cloneNode(true);
+  deftemp.appendChild(maskLand)
+  deftemp.appendChild(maskWater);
+  defs.appendChild(deftemp);
 
-  svg.append(defs).append(element)
-  // var svg = document.getElementById("map").cloneNode();
-  // svg.removeAttribute("id");
-  // var defs = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode();
-  // var filters = document.getElementById("filters")
-  // defs.appendChild(filters);
-  // svg.appendChild(defs);
-  // svg.appendChild(element);
+
+  svg.appendChild(defs);
+  svg.appendChild(element);
   return svg;
 }
 
