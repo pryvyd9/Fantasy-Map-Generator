@@ -512,7 +512,7 @@ function ck3DrawHeightmap() {
 
     if (height === 20) {
       // draw base land layer
-      const e = createElement("rect");
+      const e = document.createElement("rect");
       e.setAttribute("x", 0);
       e.setAttribute("y", 0);
       e.setAttribute("width", graphWidth);
