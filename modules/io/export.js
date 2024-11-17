@@ -504,7 +504,7 @@ function createHeightmap() {
   // render paths
   for (const height of d3.range(0, 101)) {
     const group = land;
-    const scheme = getColorScheme(group.attr("scheme"));
+    const scheme = getColorScheme(group.getAttribute("scheme"));
 
     if (height === 20) {
       // draw base land layer
