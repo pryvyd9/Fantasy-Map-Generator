@@ -465,11 +465,15 @@ function saveGeoJSON_Cells() {
 }
 
 
-function createHeightmap() {
+function ck3DrawHeightmap() {
   TIME && console.time("drawHeightmap");
-
-  const land = document.createElement("g");
-  land.setAttribute("id", "#landHeights")
+  
+  const land = document.getElementById("#landHeights").cloneNode(true);
+  // const land = document.createElement("g");
+  land.setAttribute("scheme", "monochrome");
+  land.setAttribute("opacity", "1");
+  land.setAttribute("terracing", "0");
+  land.removeAttribute("mask");
 
   const paths = new Array(101);
 
@@ -564,8 +568,12 @@ function saveCK3() {
   // saveMap()
 
   const xml = document.createElement("xml");
-  const landHeights = createHeightmap();
+  const landHeights = ck3DrawHeightmap();
   xml.appendChild(landHeights)
+
+  const serializedMap = new XMLSerializer().serializeToString(xml);
+  const filename = getFileName() + ".xml";
+  saveToMachine(serializedMap, filename);
 }
 
 function saveGeoJSON_Routes() {
