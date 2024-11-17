@@ -469,7 +469,6 @@ function ck3DrawHeightmap() {
   TIME && console.time("drawHeightmap");
   
   const land = document.getElementById("landHeights").cloneNode(true);
-  // const land = document.createElement("g");
   land.setAttribute("scheme", "monochrome");
   land.setAttribute("opacity", "1");
   land.setAttribute("terracing", "0");
@@ -566,21 +565,96 @@ function ck3DrawHeightmap() {
   return wrapInSvg(land);
 }
 
+
+function ck3DrawBiomes() {
+
+  const biomes = $("#biomes").cloneNode();
+
+  const cells = pack.cells,
+    vertices = pack.vertices,
+    n = cells.i.length;
+  const used = new Uint8Array(cells.i.length);
+  const paths = new Array(biomesData.i.length).fill("");
+
+  for (const i of cells.i) {
+    if (!cells.biome[i]) continue; // no need to mark marine biome (liquid water)
+    if (used[i]) continue; // already marked
+    const b = cells.biome[i];
+    const onborder = cells.c[i].some(n => cells.biome[n] !== b);
+    if (!onborder) continue;
+    const edgeVerticle = cells.v[i].find(v => vertices.c[v].some(i => cells.biome[i] !== b));
+    const chain = connectVertices(edgeVerticle, b);
+    if (chain.length < 3) continue;
+    const points = clipPoly(
+      chain.map(v => vertices.p[v]),
+      1
+    );
+    paths[b] += "M" + points.join("L") + "Z";
+  }
+
+  paths.forEach(function (d, i) {
+    if (d.length < 10) return;
+    biomes
+      .append("path")
+      .attr("d", d)
+      .attr("fill", biomesData.color[i])
+      .attr("stroke", biomesData.color[i])
+      .attr("id", "biome" + i);
+  });
+
+  // connect vertices to chain
+  function connectVertices(start, b) {
+    const chain = []; // vertices chain to form a path
+    for (let i = 0, current = start; i === 0 || (current !== start && i < 20000); i++) {
+      const prev = chain[chain.length - 1]; // previous vertex in chain
+      chain.push(current); // add current vertex to sequence
+      const c = vertices.c[current]; // cells adjacent to vertex
+      c.filter(c => cells.biome[c] === b).forEach(c => (used[c] = 1));
+      const c0 = c[0] >= n || cells.biome[c[0]] !== b;
+      const c1 = c[1] >= n || cells.biome[c[1]] !== b;
+      const c2 = c[2] >= n || cells.biome[c[2]] !== b;
+      const v = vertices.v[current]; // neighboring vertices
+      if (v[0] !== prev && c0 !== c1) current = v[0];
+      else if (v[1] !== prev && c1 !== c2) current = v[1];
+      else if (v[2] !== prev && c0 !== c2) current = v[2];
+      if (current === chain[chain.length - 1]) {
+        ERROR && console.error("Next vertex is not found");
+        break;
+      }
+    }
+    return chain;
+  }
+
+  return wrapInSvg(biomes);
+}
+
 function wrapInSvg(element) {
-  var svg = document.getElementById("map").cloneNode();
-  svg.removeAttribute("id");
-  var defs = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode();
-  var filters = document.getElementById("filters")
-  defs.appendChild(filters);
-  svg.appendChild(defs);
-  svg.appendChild(element);
+  var svg = $("#map").cloneNode();
+  svg.removeAttr("id");
+  var defs = $("#map").find("defs")[0].cloneNode();
+  var filters = $("filters").cloneNode(true);
+  defs.append(filters);
+  var deftemp = $("deftemp").cloneNode();
+  var maskLand = deftemp.find("#land").cloneNode(true);
+  var maskWater = deftemp.find("#water").cloneNode(true);
+  deftemp.append(maskLand).append(maskWater);
+  defs.append(deftemp);
+
+  svg.append(defs).append(element)
+  // var svg = document.getElementById("map").cloneNode();
+  // svg.removeAttribute("id");
+  // var defs = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode();
+  // var filters = document.getElementById("filters")
+  // defs.appendChild(filters);
+  // svg.appendChild(defs);
+  // svg.appendChild(element);
   return svg;
 }
 
 function saveCK3() {
   const xml = document.createElement("xml");
-  const landHeights = ck3DrawHeightmap();
-  xml.appendChild(landHeights)
+  xml.appendChild(ck3DrawHeightmap())
+  xml.appendChild(ck3DrawBiomes())
 
   const serializedMap = new XMLSerializer().serializeToString(xml);
   const filename = getFileName() + ".xml";
