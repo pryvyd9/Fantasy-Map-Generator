@@ -631,7 +631,7 @@ function wrapInSvg(element) {
   var svg = document.getElementById("map").cloneNode();
   svg.removeAttribute("id");
   var defs = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode();
-  var filters = document.getElementById("filters")
+  var filters = document.getElementById("filters").cloneNode(true);
   defs.appendChild(filters);
 
   var deftemp = document.getElementById("deftemp").cloneNode();
