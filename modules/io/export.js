@@ -468,7 +468,7 @@ function saveGeoJSON_Cells() {
 function createHeightmap() {
   TIME && console.time("drawHeightmap");
 
-  const land = new XMLDocument();
+  const land = XMLDocument();
   land.setAttribute("id", "#landHeights")
 
   const paths = new Array(101);
@@ -580,7 +580,7 @@ function createHeightmap() {
 function saveCK3() {
   // saveMap()
 
-  const xml = new XMLDocument();
+  const xml = XMLDocument();
   const landHeights = createHeightmap();
   xml.appendChild(landHeights)
 }
