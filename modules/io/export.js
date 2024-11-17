@@ -563,15 +563,19 @@ function ck3DrawHeightmap() {
 
   TIME && console.timeEnd("drawHeightmap");
 
+  return wrapInSvg(land);
+}
+
+function wrapInSvg(element) {
   var svg = document.getElementById("map").cloneNode();
   svg.removeAttribute("id");
-  svg.appendChild(land);
+  var defs = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode(true);
+  svg.appendChild(defs);
+  svg.appendChild(element);
   return svg;
 }
 
 function saveCK3() {
-  // saveMap()
-
   const xml = document.createElement("xml");
   const landHeights = ck3DrawHeightmap();
   xml.appendChild(landHeights)
