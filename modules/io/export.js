@@ -562,6 +562,8 @@ function ck3DrawHeightmap() {
   }
 
   TIME && console.timeEnd("drawHeightmap");
+
+  return land;
 }
 
 function saveCK3() {
