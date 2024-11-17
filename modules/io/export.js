@@ -468,7 +468,7 @@ function saveGeoJSON_Cells() {
 function ck3DrawHeightmap() {
   TIME && console.time("drawHeightmap");
   
-  const land = document.getElementById("#landHeights").cloneNode(true);
+  const land = document.getElementById("landHeights").cloneNode(true);
   // const land = document.createElement("g");
   land.setAttribute("scheme", "monochrome");
   land.setAttribute("opacity", "1");
