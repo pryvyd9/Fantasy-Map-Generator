@@ -569,10 +569,9 @@ function ck3DrawHeightmap() {
 function wrapInSvg(element) {
   var svg = document.getElementById("map").cloneNode();
   svg.removeAttribute("id");
-  var defs = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode(true);
-  defs.getElementById("deftemp").remove();
-  defs.getElementById("oceanic").remove();
-  defs.getElementById("vignette-mask").remove();
+  var defs = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode();
+  var filters = document.getElementById("filters")
+  defs.appendChild(filters);
   svg.appendChild(defs);
   svg.appendChild(element);
   return svg;
