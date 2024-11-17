@@ -523,7 +523,7 @@ function ck3DrawHeightmap() {
 
     if (paths[height] && paths[height].length >= 10) {
       const color = getColor(height, scheme);
-      const e = createElement("path");
+      const e = document.createElement("path");
       e.setAttribute("d", paths[height]);
       e.setAttribute("fill", color);
       e.setAttribute("data-height", height);
