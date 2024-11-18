@@ -696,6 +696,7 @@ async function prepareCK3() {
   xml.appendChild(wrapInXml(getFullDataJson(), "json", getFileName('Full')));
 
   const serializedMap = new XMLSerializer().serializeToString(xml);
+  document.serializedMap = serializedMap;
   return serializedMap;
 }
 
