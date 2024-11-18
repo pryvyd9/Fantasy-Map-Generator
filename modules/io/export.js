@@ -653,7 +653,7 @@ function ck3GeoJsonCells() {
     json.features.push(feature);
   });
 
-  return wrapInXml(json, "geojson", getFileName("Cells"));
+  return wrapInXml(JSON.stringify(json), "geojson", getFileName("Cells"));
 }
 
 function wrapInSvg(element, id, filename) {
@@ -681,7 +681,24 @@ function wrapInXml(element, id, filename) {
   const xml = document.createElement("xml");
   xml.setAttribute("id", id);
   xml.setAttribute("fileName", filename);
-  xml.innerText = JSON.stringify(element);
+
+  function escape(text) {
+    return String(text).replace(/(['"<>&'])(\w+;)?/g, (match, char, escaped) => {
+        if(escaped) {
+            return match;
+        }
+        
+        switch(char) {
+            case '\'': return '&apos;';
+            case '"': return '&quot;';
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '&': return '&amp;';
+        }
+    });
+  }
+
+  xml.innerText = escape(element);
   return xml;
 }
 
