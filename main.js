@@ -248,6 +248,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   restoreDefaultEvents(); // apply default viewbox events
   initiateAutosave();
+
+  document.prepareCK3 = prepareCK3;
 });
 
 function hideLoading() {

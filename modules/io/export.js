@@ -647,15 +647,22 @@ function wrapInSvg(element) {
   return svg;
 }
 
-function saveCK3() {
+function prepareCK3() {
   const xml = document.createElement("xml");
   xml.appendChild(ck3DrawHeightmap())
   xml.appendChild(ck3DrawBiomes())
 
   const serializedMap = new XMLSerializer().serializeToString(xml);
+  return serializedMap;
+}
+
+function exportCK3() {
+  const serializedMap = prepareCK3();
   const filename = getFileName() + ".xml";
   saveToMachine(serializedMap, filename);
 }
+
+
 
 function saveGeoJSON_Routes() {
   const json = {type: "FeatureCollection", features: []};
