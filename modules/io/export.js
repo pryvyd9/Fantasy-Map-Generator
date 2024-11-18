@@ -681,8 +681,8 @@ function wrapInXml(element, id, filename) {
   const xml = document.createElement("xml");
   xml.setAttribute("id", id);
   xml.setAttribute("fileName", filename);
-  xml.innerText = element;
-  return svg;
+  xml.innerText = JSON.stringify(element);
+  return xml;
 }
 
 
