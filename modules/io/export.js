@@ -562,7 +562,7 @@ function ck3DrawHeightmap() {
 
   TIME && console.timeEnd("drawHeightmap");
 
-  return wrapInSvg(land);
+  return wrapInSvg(land, getFileName("land"));
 }
 
 
@@ -624,12 +624,41 @@ function ck3DrawBiomes() {
     return chain;
   }
 
-  return wrapInSvg(biomes);
+  return wrapInSvg(biomes, getFileName("biomes"));
 }
 
-function wrapInSvg(element) {
+function ck3GeoJsonCells() {
+  const json = {type: "FeatureCollection", features: []};
+  const cells = pack.cells;
+  const getPopulation = i => {
+    const [r, u] = getCellPopulation(i);
+    return rn(r + u);
+  };
+  const getHeight = i => parseInt(getFriendlyHeight([cells.p[i][0], cells.p[i][1]]));
+
+  cells.i.forEach(i => {
+    const coordinates = getCellCoordinates(cells.v[i]);
+    const height = getHeight(i);
+    const biome = cells.biome[i];
+    const type = pack.features[cells.f[i]].type;
+    const population = getPopulation(i);
+    const state = cells.state[i];
+    const province = cells.province[i];
+    const culture = cells.culture[i];
+    const religion = cells.religion[i];
+    const neighbors = cells.c[i];
+
+    const properties = {id: i, height, biome, type, population, state, province, culture, religion, neighbors};
+    const feature = {type: "Feature", geometry: {type: "Polygon", coordinates}, properties};
+    json.features.push(feature);
+  });
+
+  return wrapInXml(json, getFileName("Cells"));
+}
+
+function wrapInSvg(element, id) {
   var svg = document.getElementById("map").cloneNode();
-  svg.removeAttribute("id");
+  svg.setAttribute("id", id);
   var defs = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode();
   var filters = document.getElementById("filters").cloneNode(true);
   defs.appendChild(filters);
@@ -647,17 +676,29 @@ function wrapInSvg(element) {
   return svg;
 }
 
-function prepareCK3() {
+function wrapInXml(element, id) {
   const xml = document.createElement("xml");
-  xml.appendChild(ck3DrawHeightmap())
-  xml.appendChild(ck3DrawBiomes())
+  xml.setAttribute("id", id);
+  xml.appendChild(element);
+  return svg;
+}
+
+
+async function prepareCK3() {
+  const xml = document.createElement("xml");
+  xml.setAttribute("mapName", getFileName());
+  xml.appendChild(ck3DrawHeightmap());
+  xml.appendChild(ck3DrawBiomes());
+  xml.appendChild(ck3GeoJsonCells());
+  const {getFullDataJson} = await import("../dynamic/export-json.js?v=1.97.08");
+  xml.appendChild(getFullDataJson());
 
   const serializedMap = new XMLSerializer().serializeToString(xml);
   return serializedMap;
 }
 
-function exportCK3() {
-  const serializedMap = prepareCK3();
+async function exportCK3() {
+  const serializedMap = await prepareCK3();
   const filename = getFileName() + ".xml";
   saveToMachine(serializedMap, filename);
 }
