@@ -653,12 +653,13 @@ function ck3GeoJsonCells() {
     json.features.push(feature);
   });
 
-  return wrapInXml(json, getFileName("Cells"));
+  return wrapInXml(json, "geojson", getFileName("Cells"));
 }
 
-function wrapInSvg(element, id) {
+function wrapInSvg(element, id, filename) {
   var svg = document.getElementById("map").cloneNode();
   svg.setAttribute("id", id);
+  svg.setAttribute("fileName", filename);
   var defs = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode();
   var filters = document.getElementById("filters").cloneNode(true);
   defs.appendChild(filters);
@@ -676,9 +677,10 @@ function wrapInSvg(element, id) {
   return svg;
 }
 
-function wrapInXml(element, id) {
+function wrapInXml(element, id, filename) {
   const xml = document.createElement("xml");
   xml.setAttribute("id", id);
+  svg.setAttribute("fileName", filename);
   xml.appendChild(element);
   return svg;
 }
@@ -691,7 +693,7 @@ async function prepareCK3() {
   xml.appendChild(ck3DrawBiomes());
   xml.appendChild(ck3GeoJsonCells());
   const {getFullDataJson} = await import("../dynamic/export-json.js?v=1.97.08");
-  xml.appendChild(getFullDataJson());
+  xml.appendChild(wrapInXml(getFullDataJson(), "json", getFileName('Full')));
 
   const serializedMap = new XMLSerializer().serializeToString(xml);
   return serializedMap;
