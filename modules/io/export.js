@@ -686,7 +686,7 @@ function ck3DrawRelief() {
     for (const r of relief) {
       reliefHTML += `<use href="${r.i}" x="${r.x}" y="${r.y}" width="${r.s}" height="${r.s}"/>`;
     }
-    terrain.html(reliefHTML);
+    terrain.innerHTML = reliefHTML;
 
     TIME && console.timeEnd("drawRelief");
     
