@@ -616,7 +616,7 @@ function ck3DrawRelief() {
   }
 
   function getIcon(type) {
-    const set = terrain.attr("set") || "simple";
+    const set = terrain.getAttribute("set") || "simple";
     if (set === "simple") return "#relief-" + getOldIcon(type) + "-1";
     if (set === "colored") return "#relief-" + type + "-" + getVariant(type);
     if (set === "gray") return "#relief-" + type + "-" + getVariant(type) + "-bw";
