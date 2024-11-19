@@ -478,8 +478,8 @@ function ck3DrawHeightmap() {
   background.setAttribute("y", 0);
   background.setAttribute("width", svgWidth);
   background.setAttribute("height", svgHeight);
-  const backgroundColor = getColor(64, scheme(0.8));
-  background.setAttribute("fill", backgroundColor);
+  // const backgroundColor = getColor(64, scheme(0.8));
+  background.setAttribute("fill", "rgb(50, 50, 50)");
   land.appendChild(background)
 
   const paths = new Array(101);
