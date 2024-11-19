@@ -467,21 +467,12 @@ function saveGeoJSON_Cells() {
 
 function ck3DrawHeightmap() {
   TIME && console.time("drawHeightmap");
-  
+
   const land = document.getElementById("landHeights").cloneNode(true);
   land.setAttribute("scheme", "monochrome");
   land.setAttribute("opacity", "1");
   land.setAttribute("terracing", "0");
-  // land.removeAttribute("mask");
-  // const background = document.createElement("rect");
-  // background.setAttribute("id", "landBackground");
-  // background.setAttribute("x", 0);
-  // background.setAttribute("y", 0);
-  // background.setAttribute("width", svgWidth);
-  // background.setAttribute("height", svgHeight);
-  // // const backgroundColor = getColor(64, scheme(0.8));
-  // background.setAttribute("fill", "rgb(50, 50, 50)");
-  // land.appendChild(background)
+  land.setAttribute("shape-rendering", "optimizeSpeed");
 
   const paths = new Array(101);
 
@@ -577,6 +568,7 @@ function ck3DrawHeightmap() {
 
 function ck3DrawBiomes() {
   const biomes = document.getElementById("biomes").cloneNode();
+  biomes.setAttribute("shape-rendering", "optimizeSpeed");
 
   const cells = pack.cells,
     vertices = pack.vertices,
@@ -665,22 +657,33 @@ function ck3GeoJsonCells() {
   return wrapInXml(JSON.stringify(json), "geojson", getFileName("Cells"));
 }
 
+// function wrapInSvg(element, id, filename) {
+//   var svg = document.getElementById("map").cloneNode();
+//   svg.setAttribute("id", id);
+//   svg.setAttribute("fileName", filename);
+//   var defs = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode();
+//   var filters = document.getElementById("filters").cloneNode(true);
+//   defs.appendChild(filters);
+
+//   var deftemp = document.getElementById("deftemp").cloneNode();
+//   var maskLand = document.getElementById("land").cloneNode(true);
+//   var maskWater = document.getElementById("water").cloneNode(true);
+//   deftemp.appendChild(maskLand)
+//   deftemp.appendChild(maskWater);
+//   defs.appendChild(deftemp);
+
+
+//   svg.appendChild(defs);
+//   svg.appendChild(element);
+//   return svg;
+// }
+
+
 function wrapInSvg(element, id, filename) {
   var svg = document.getElementById("map").cloneNode();
   svg.setAttribute("id", id);
   svg.setAttribute("fileName", filename);
-  var defs = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode();
-  var filters = document.getElementById("filters").cloneNode(true);
-  defs.appendChild(filters);
-
-  var deftemp = document.getElementById("deftemp").cloneNode();
-  var maskLand = document.getElementById("land").cloneNode(true);
-  var maskWater = document.getElementById("water").cloneNode(true);
-  deftemp.appendChild(maskLand)
-  deftemp.appendChild(maskWater);
-  defs.appendChild(deftemp);
-
-
+  var defs = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode(true);
   svg.appendChild(defs);
   svg.appendChild(element);
   return svg;
