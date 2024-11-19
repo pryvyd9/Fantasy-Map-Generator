@@ -571,7 +571,7 @@ function ck3DrawHeightmap() {
 
   TIME && console.timeEnd("drawHeightmap");
 
-  return wrapInSvg(land, "land", getFileName("land"));
+  return wrapInSvg(land, "svgland", getFileName("land"));
 }
 
 
@@ -633,7 +633,7 @@ function ck3DrawBiomes() {
     return chain;
   }
 
-  return wrapInSvg(biomes, "biomes", getFileName("biomes"));
+  return wrapInSvg(biomes, "svgbiomes", getFileName("biomes"));
 }
 
 function ck3GeoJsonCells() {
