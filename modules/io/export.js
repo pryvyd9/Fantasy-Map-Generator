@@ -473,6 +473,14 @@ function ck3DrawHeightmap() {
   land.setAttribute("opacity", "1");
   land.setAttribute("terracing", "0");
   land.removeAttribute("mask");
+  const background = document.createElement("rect");
+  background.setAttribute("x", 0);
+  background.setAttribute("y", 0);
+  background.setAttribute("width", svgWidth);
+  background.setAttribute("height", svgHeight);
+  const backgroundColor = getColor(64, scheme(0.8));
+  background.setAttribute("fill", backgroundColor);
+  land.appendChild(background)
 
   const paths = new Array(101);
 
