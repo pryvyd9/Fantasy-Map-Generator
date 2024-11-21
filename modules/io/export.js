@@ -737,7 +737,7 @@ function ck3DrawOceanLayers() {
   const oceanLayers = document.createElement("g");
   oceanLayers.setAttribute("layers", "-6, -3, -1");
   oceanLayers.setAttribute("filter", "url(#filter-sepia)");
-  const outline = oceanLayers.attr("layers");
+  const outline = oceanLayers.getAttribute("layers");
   if (outline === "none") return;
   TIME && console.time("drawOceanLayers");
 
@@ -771,7 +771,13 @@ function ck3DrawOceanLayers() {
   for (const t of limits) {
     const layer = chains.filter(c => c[0] === t);
     let path = layer.map(c => round(lineGen(c[1]))).join("");
-    if (path) oceanLayers.append("path").attr("d", path).attr("fill", "#ecf2f9").attr("fill-opacity", opacity);
+    if (path) {
+      const p = document.createElement("path");
+      p.setAttribute("d", path);
+      p.setAttribute("fill", "#ecf2f9");
+      p.setAttribute("fill-opacity", opacity);
+      oceanLayers.appendChild(p);
+    }
   }
 
   // find eligible cell vertex to start path detection
