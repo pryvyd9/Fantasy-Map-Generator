@@ -695,6 +695,7 @@ function ck3DrawRelief() {
 }
 
 function ck3DrawOceanLayers() {
+  let cells, vertices, pointsN, used;
   
   function randomizeOutline() {
     const limits = [];
