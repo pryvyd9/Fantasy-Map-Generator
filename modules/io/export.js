@@ -563,7 +563,7 @@ function ck3DrawHeightmap() {
 
   TIME && console.timeEnd("drawHeightmap");
 
-  return wrapInSvg(land, "svgland", getFileName("land"));
+  return wrapInSvg(land, "svgland", getFileName("land"), {includeDefs: true});
 }
 
 function ck3DrawRelief() {
@@ -627,70 +627,70 @@ function ck3DrawRelief() {
 
   const terrain = document.getElementById("terrain").cloneNode();
 
-    const cells = pack.cells;
-    const density = terrain.getAttribute("density") || 0.4;
-    const size = 2 * (terrain.getAttribute("size") || 1);
-    const mod = 0.2 * size; // size modifier
-    const relief = [];
+  const cells = pack.cells;
+  const density = terrain.getAttribute("density") || 0.4;
+  const size = 2 * (terrain.getAttribute("size") || 1);
+  const mod = 0.2 * size; // size modifier
+  const relief = [];
 
-    for (const i of cells.i) {
-      const height = cells.h[i];
-      if (height < 20) continue; // no icons on water
-      if (cells.r[i]) continue; // no icons on rivers
-      const biome = cells.biome[i];
-      if (height < 50 && biomesData.iconsDensity[biome] === 0) continue; // no icons for this biome
+  for (const i of cells.i) {
+    const height = cells.h[i];
+    if (height < 20) continue; // no icons on water
+    if (cells.r[i]) continue; // no icons on rivers
+    const biome = cells.biome[i];
+    if (height < 50 && biomesData.iconsDensity[biome] === 0) continue; // no icons for this biome
 
-      const polygon = getPackPolygon(i);
-      const [minX, maxX] = d3.extent(polygon, p => p[0]);
-      const [minY, maxY] = d3.extent(polygon, p => p[1]);
+    const polygon = getPackPolygon(i);
+    const [minX, maxX] = d3.extent(polygon, p => p[0]);
+    const [minY, maxY] = d3.extent(polygon, p => p[1]);
 
-      if (height < 50) placeBiomeIcons(i, biome);
-      else placeReliefIcons(i);
+    if (height < 50) placeBiomeIcons(i, biome);
+    else placeReliefIcons(i);
 
-      function placeBiomeIcons() {
-        const iconsDensity = biomesData.iconsDensity[biome] / 100;
-        const radius = 2 / iconsDensity / density;
-        if (Math.random() > iconsDensity * 10) return;
+    function placeBiomeIcons() {
+      const iconsDensity = biomesData.iconsDensity[biome] / 100;
+      const radius = 2 / iconsDensity / density;
+      if (Math.random() > iconsDensity * 10) return;
 
-        for (const [cx, cy] of poissonDiscSampler(minX, minY, maxX, maxY, radius)) {
-          if (!d3.polygonContains(polygon, [cx, cy])) continue;
-          let h = (4 + Math.random()) * size;
-          const icon = getBiomeIcon(i, biomesData.icons[biome]);
-          if (icon === "#relief-grass-1") h *= 1.2;
-          relief.push({i: icon, x: rn(cx - h, 2), y: rn(cy - h, 2), s: rn(h * 2, 2)});
-        }
-      }
-
-      function placeReliefIcons(i) {
-        const radius = 2 / density;
-        const [icon, h] = getReliefIcon(i, height);
-
-        for (const [cx, cy] of poissonDiscSampler(minX, minY, maxX, maxY, radius)) {
-          if (!d3.polygonContains(polygon, [cx, cy])) continue;
-          relief.push({i: icon, x: rn(cx - h, 2), y: rn(cy - h, 2), s: rn(h * 2, 2)});
-        }
-      }
-
-      function getReliefIcon(i, h) {
-        const temp = grid.cells.temp[pack.cells.g[i]];
-        const type = h > 70 && temp < 0 ? "mountSnow" : h > 70 ? "mount" : "hill";
-        const size = h > 70 ? (h - 45) * mod : minmax((h - 40) * mod, 3, 6);
-        return [getIcon(type), size];
+      for (const [cx, cy] of poissonDiscSampler(minX, minY, maxX, maxY, radius)) {
+        if (!d3.polygonContains(polygon, [cx, cy])) continue;
+        let h = (4 + Math.random()) * size;
+        const icon = getBiomeIcon(i, biomesData.icons[biome]);
+        if (icon === "#relief-grass-1") h *= 1.2;
+        relief.push({i: icon, x: rn(cx - h, 2), y: rn(cy - h, 2), s: rn(h * 2, 2)});
       }
     }
 
-    // sort relief icons by y+size
-    relief.sort((a, b) => a.y + a.s - (b.y + b.s));
+    function placeReliefIcons(i) {
+      const radius = 2 / density;
+      const [icon, h] = getReliefIcon(i, height);
 
-    let reliefHTML = "";
-    for (const r of relief) {
-      reliefHTML += `<use href="${r.i}" x="${r.x}" y="${r.y}" width="${r.s}" height="${r.s}"/>`;
+      for (const [cx, cy] of poissonDiscSampler(minX, minY, maxX, maxY, radius)) {
+        if (!d3.polygonContains(polygon, [cx, cy])) continue;
+        relief.push({i: icon, x: rn(cx - h, 2), y: rn(cy - h, 2), s: rn(h * 2, 2)});
+      }
     }
-    terrain.innerHTML = reliefHTML;
 
-    TIME && console.timeEnd("drawRelief");
-    
-    return wrapInSvg(terrain, "svgterrain", getFileName("terrain"));
+    function getReliefIcon(i, h) {
+      const temp = grid.cells.temp[pack.cells.g[i]];
+      const type = h > 70 && temp < 0 ? "mountSnow" : h > 70 ? "mount" : "hill";
+      const size = h > 70 ? (h - 45) * mod : minmax((h - 40) * mod, 3, 6);
+      return [getIcon(type), size];
+    }
+  }
+
+  // sort relief icons by y+size
+  relief.sort((a, b) => a.y + a.s - (b.y + b.s));
+
+  let reliefHTML = "";
+  for (const r of relief) {
+    reliefHTML += `<use href="${r.i}" x="${r.x}" y="${r.y}" width="${r.s}" height="${r.s}"/>`;
+  }
+  terrain.innerHTML = reliefHTML;
+
+  TIME && console.timeEnd("drawRelief");
+  
+  return wrapInSvg(terrain, "svgterrain", getFileName("terrain"), {includeDefsRelief:true});
 }
 
 function ck3DrawBiomes() {
@@ -806,12 +806,18 @@ function ck3GeoJsonCells() {
 // }
 
 
-function wrapInSvg(element, id, filename) {
+function wrapInSvg(element, id, filename, {includeDefs, includeDefsRelief} = {}) {
   var svg = document.getElementById("map").cloneNode();
   svg.setAttribute("id", id);
   svg.setAttribute("fileName", filename);
-  var defs = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode(true);
-  svg.appendChild(defs);
+  if (includeDefs){
+    var defs = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode(true);
+    svg.appendChild(defs);
+  }
+  if (includeDefsRelief){
+    var defs = document.getElementById("defElements").getElementsByTagName("defs")[0].cloneNode(true);
+    svg.appendChild(defs);
+  }
   svg.appendChild(element);
   return svg;
 }
