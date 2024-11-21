@@ -921,19 +921,19 @@ function wrapInSvg(element, id, filename, {includeDefs, includeDefsRelief} = {})
   var svg = document.getElementById("map").cloneNode();
   svg.setAttribute("id", id);
   svg.setAttribute("fileName", filename);
-  if (includeDefs){
-    var defs = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode(true);
-    svg.appendChild(defs);
-  } else if (includeDefsRelief){
-    var defs = document.getElementById("defElements").getElementsByTagName("defs")[0].cloneNode(true);
-    svg.appendChild(defs);
-  } else if (includeDefs && includeDefsRelief) {
+  if (includeDefs && includeDefsRelief) {
     var d1 = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode(true);
     var d2 = document.getElementById("defElements").getElementsByTagName("defs")[0].cloneNode(true);
     svg.appendChild(d1);
     for(var d in d2.childNodes){
       svg.appendChild(d);
     }
+  } else if (includeDefs){
+    var defs = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode(true);
+    svg.appendChild(defs);
+  } else if (includeDefsRelief){
+    var defs = document.getElementById("defElements").getElementsByTagName("defs")[0].cloneNode(true);
+    svg.appendChild(defs);
   }
   svg.appendChild(element);
   return svg;
