@@ -801,7 +801,7 @@ function ck3DrawFlatMap(){
   viewBox.appendChild(ocean);
   viewBox.appendChild(relief);
 
-  return wrapInSvg(viewBox, "svgFlatMap", getFileName("svgFlatMap"), {includeDefs, includeDefsRelief});
+  return wrapInSvg(viewBox, "svgFlatMap", getFileName("svgFlatMap"), {includeDefs:true, includeDefsRelief:true});
 }
 
 function ck3DrawBiomes() {
