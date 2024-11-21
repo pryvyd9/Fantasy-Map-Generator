@@ -924,10 +924,16 @@ function wrapInSvg(element, id, filename, {includeDefs, includeDefsRelief} = {})
   if (includeDefs){
     var defs = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode(true);
     svg.appendChild(defs);
-  }
-  if (includeDefsRelief){
+  } else if (includeDefsRelief){
     var defs = document.getElementById("defElements").getElementsByTagName("defs")[0].cloneNode(true);
     svg.appendChild(defs);
+  } else if (includeDefs && includeDefsRelief) {
+    var d1 = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode(true);
+    var d2 = document.getElementById("defElements").getElementsByTagName("defs")[0].cloneNode(true);
+    svg.appendChild(d1);
+    for(var d in d2.childNodes){
+      svg.appendChild(d);
+    }
   }
   svg.appendChild(element);
   return svg;
