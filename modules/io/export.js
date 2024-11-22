@@ -737,8 +737,16 @@ function ck3DrawOceanLayers() {
 
   const oceanLayers = document.createElement("g");
   oceanLayers.setAttribute("layers", "-6, -3, -1");
-  oceanLayers.setAttribute("filter", "url(#filter-sepia)");
+  // oceanLayers.setAttribute("filter", "url(#filter-sepia)");
+  const oceanBase = document.createElement("rect");
+  oceanBase.setAttribute("x", 0);
+  oceanBase.setAttribute("y", 0);
+  oceanBase.setAttribute("width", svgWidth);
+  oceanBase.setAttribute("height", svgHeight);
+  oceanBase.setAttribute("fill", "#466eab");
+  oceanLayers.appendChild(oceanBase);
   const outline = oceanLayers.getAttribute("layers");
+
   if (outline === "none") return;
   TIME && console.time("drawOceanLayers");
 
