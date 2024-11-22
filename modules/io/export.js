@@ -690,6 +690,9 @@ function ck3DrawRelief() {
 
   TIME && console.timeEnd("drawRelief");
   
+  const coastLine = document.getElementById("coastline");
+  terrain.appendChild(coastLine);
+
   return terrain;
   // return wrapInSvg(terrain, "svgterrain", getFileName("terrain"), {includeDefsRelief:true});
 }
@@ -738,14 +741,10 @@ function ck3DrawOceanLayers() {
   const oceanLayers = document.createElement("g");
   oceanLayers.setAttribute("layers", "-6, -3, -1");
   // oceanLayers.setAttribute("filter", "url(#filter-sepia)");
-  const oceanBase = document.createElement("rect");
-  oceanBase.setAttribute("x", 0);
-  oceanBase.setAttribute("y", 0);
-  oceanBase.setAttribute("width", svgWidth);
-  oceanBase.setAttribute("height", svgHeight);
-  oceanBase.setAttribute("fill", "#466eab");
-  oceanLayers.appendChild(oceanBase);
+  oceanLayers.innerHTML = `<rect x="0" y="0" width="${svgWidth}" height="${svgHeight}" fill="#466eab"/>`;
+
   const outline = oceanLayers.getAttribute("layers");
+
 
   if (outline === "none") return;
   TIME && console.time("drawOceanLayers");
