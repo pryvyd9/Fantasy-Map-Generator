@@ -691,7 +691,7 @@ function ck3DrawRelief() {
   TIME && console.timeEnd("drawRelief");
   
   const coastLine = document.getElementById("coastline").cloneNode(true);
-  coastLine.setAttribute("fill", "#e3dfce")
+  coastLine.setAttribute("fill", "#EEF6FB")
   terrain.appendChild(coastLine);
 
   return terrain;
