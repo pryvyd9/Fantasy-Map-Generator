@@ -689,7 +689,7 @@ function ck3DrawRelief() {
   
   const coastLine = document.getElementById("coastline").cloneNode(true);
   coastLine.children[0].setAttribute("opacity", 1);
-  coastLine.children[0].setAttribute("filter", null);
+  coastLine.children[0].removeAttribute("filter");
   coastLine.setAttribute("fill", "#eef6fb")
   
   let reliefHTML = coastLine.outerHTML;
