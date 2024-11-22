@@ -474,6 +474,12 @@ function ck3DrawHeightmap() {
   land.setAttribute("terracing", "0");
   land.setAttribute("shape-rendering", "optimizeSpeed");
   land.setAttribute("skip", "0");
+  const lakes = document.getElementById("lakes").cloneNode(true);
+  for (const c of lakes.children) {
+    c.setAttribute("fill", "#000000");
+    c.setAttribute("opacity", 1);
+  }
+  land.appendChild(lakes);
 
   const paths = new Array(101);
 
