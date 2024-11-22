@@ -627,6 +627,10 @@ function ck3DrawRelief() {
 
   const terrain = document.getElementById("terrain").cloneNode();
 
+  const coastLine = document.getElementById("coastline").cloneNode(true);
+  coastLine.setAttribute("fill", "#eef6fb")
+  terrain.appendChild(coastLine);
+  
   const cells = pack.cells;
   const density = terrain.getAttribute("density") || 0.4;
   const size = 2 * (terrain.getAttribute("size") || 1);
@@ -690,9 +694,6 @@ function ck3DrawRelief() {
 
   TIME && console.timeEnd("drawRelief");
   
-  const coastLine = document.getElementById("coastline").cloneNode(true);
-  coastLine.setAttribute("fill", "#eef6fb")
-  terrain.appendChild(coastLine);
 
   return terrain;
   // return wrapInSvg(terrain, "svgterrain", getFileName("terrain"), {includeDefsRelief:true});
