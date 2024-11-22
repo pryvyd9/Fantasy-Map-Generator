@@ -924,7 +924,8 @@ function wrapInSvg(element, id, filename, {includeDefs, includeDefsRelief} = {})
   if (includeDefs && includeDefsRelief) {
     var d1 = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode(true);
     var d2 = document.getElementById("defElements").getElementsByTagName("defs")[0].cloneNode(true);
-    for (let index = 0; index < d2.children.length; index++) {
+    const length = d2.children.length;
+    for (let index = 0; index < length; index++) {
       d1.appendChild(d2.children[0]);
     }
     svg.appendChild(d1);
