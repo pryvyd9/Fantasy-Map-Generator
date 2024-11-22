@@ -627,10 +627,10 @@ function ck3DrawRelief() {
 
   const terrain = document.getElementById("terrain").cloneNode();
 
-  const coastLine = document.getElementById("coastline").cloneNode(true);
-  coastLine.setAttribute("fill", "#eef6fb")
-  terrain.appendChild(coastLine);
-  
+  // const coastLine = document.getElementById("coastline").cloneNode(true);
+  // coastLine.setAttribute("fill", "#eef6fb")
+  // terrain.appendChild(coastLine);
+
   const cells = pack.cells;
   const density = terrain.getAttribute("density") || 0.4;
   const size = 2 * (terrain.getAttribute("size") || 1);
@@ -686,7 +686,11 @@ function ck3DrawRelief() {
   // sort relief icons by y+size
   relief.sort((a, b) => a.y + a.s - (b.y + b.s));
 
-  let reliefHTML = "";
+  
+  const coastLine = document.getElementById("coastline").cloneNode(true);
+  coastLine.setAttribute("fill", "#eef6fb")
+  
+  let reliefHTML = coastLine.outerHTML;
   for (const r of relief) {
     reliefHTML += `<use href="${r.i}" x="${r.x}" y="${r.y}" width="${r.s}" height="${r.s}"/>`;
   }
