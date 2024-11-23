@@ -693,11 +693,19 @@ function ck3DrawRelief() {
   relief.sort((a, b) => a.y + a.s - (b.y + b.s));
 
   
-  const coastLine = document.getElementById("coastline").cloneNode(true);
-  coastLine.children[0].setAttribute("opacity", 1);
-  coastLine.children[0].removeAttribute("filter");
+  const coastLine = document.getElementById("coastline").cloneNode();
   coastLine.setAttribute("fill", "#eef6fb")
   
+  const sea_island = document.getElementById("sea_island").cloneNode(true);
+  sea_island.setAttribute("opacity", 1);
+  sea_island.removeAttribute("filter");
+  coastLine.appendChild(sea_island);
+
+  const lake_island = document.getElementById("lake_island").cloneNode(true);
+  lake_island.setAttribute("opacity", 1);
+  lake_island.removeAttribute("filter");
+  coastLine.appendChild(lake_island);
+
   let reliefHTML = coastLine.outerHTML;
   for (const r of relief) {
     reliefHTML += `<use href="${r.i}" x="${r.x}" y="${r.y}" width="${r.s}" height="${r.s}"/>`;
