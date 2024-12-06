@@ -565,7 +565,7 @@ function ck3DrawHeightmap() {
   // lakes have to be the last element for them to be rendered on top of land
   const lakes = document.getElementById("lakes").cloneNode(true);
   for (const c of lakes.children) {
-    c.setAttribute("fill", "#000000");
+    c.setAttribute("fill", "rgb(0,0,0)");
     c.setAttribute("opacity", 1);
   }
   land.appendChild(lakes);
