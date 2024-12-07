@@ -768,7 +768,7 @@ function ck3DrawOceanLayers() {
   const oceanLayers = document.createElement("g");
   oceanLayers.setAttribute("layers", "-6, -3, -1");
   // oceanLayers.setAttribute("filter", "url(#filter-sepia)");
-  oceanLayers.innerHTML = `<rect x="0" y="0" width="${svgWidth}" height="${svgHeight}" fill="#466eab"/>`;
+  oceanLayers.innerHTML = `<rect x="0" y="0" width="100%" height="100%" fill="#466eab"/>`;
 
   const outline = oceanLayers.getAttribute("layers");
 
