@@ -568,6 +568,7 @@ function ck3DrawHeightmap() {
   for (const c of lakes.children) {
     c.setAttribute("fill", "rgb(0,0,0)");
     c.setAttribute("opacity", 1);
+    c.setAttribute("stroke-width", 0);
   }
   land.appendChild(lakes);
 
@@ -954,6 +955,8 @@ function wrapInSvg(element, id, filename, {includeDefs, includeDefsRelief} = {})
   var svg = document.getElementById("map").cloneNode();
   svg.setAttribute("id", id);
   svg.setAttribute("fileName", filename);
+  svg.setAttribute("width", svgWidth);
+  svg.setAttribute("height", svgHeight);
   if (includeDefs && includeDefsRelief) {
     var d1 = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode(true);
     var d2 = document.getElementById("defElements").getElementsByTagName("defs")[0].cloneNode(true);
