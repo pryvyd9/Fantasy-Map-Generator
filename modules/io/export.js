@@ -955,8 +955,8 @@ function wrapInSvg(element, id, filename, {includeDefs, includeDefsRelief} = {})
   var svg = document.getElementById("map").cloneNode();
   svg.setAttribute("id", id);
   svg.setAttribute("fileName", filename);
-  svg.setAttribute("width", svgWidth);
-  svg.setAttribute("height", svgHeight);
+  svg.setAttribute("width", localStorage.getItem('mapWidth'));
+  svg.setAttribute("height", localStorage.getItem('mapHeight'));
   if (includeDefs && includeDefsRelief) {
     var d1 = document.getElementById("map").getElementsByTagName("defs")[0].cloneNode(true);
     var d2 = document.getElementById("defElements").getElementsByTagName("defs")[0].cloneNode(true);
