@@ -434,14 +434,24 @@ function inlineStyle(clone) {
   emptyG.remove();
 }
 
-function saveGeoJSON_Cells() {
+function saveGeoJsonCells() {
+  const {cells, vertices} = pack;
   const json = {type: "FeatureCollection", features: []};
   const cells = pack.cells;
   const getPopulation = i => {
     const [r, u] = getCellPopulation(i);
     return rn(r + u);
   };
-  const getHeight = i => parseInt(getFriendlyHeight([cells.p[i][0], cells.p[i][1]]));
+
+  const getHeight = i => parseInt(getFriendlyHeight([...cells.p[i]]));
+
+  function getCellCoordinates(cellVertices) {
+    const coordinates = cellVertices.map(vertex => {
+      const [x, y] = vertices.p[vertex];
+      return getCoordinates(x, y, 4);
+    });
+    return [[...coordinates, coordinates[0]]];
+  }
 
   cells.i.forEach(i => {
     const coordinates = getCellCoordinates(cells.v[i]);
@@ -667,16 +677,12 @@ function ck3DrawRelief() {
       const radius = 2 / iconsDensity / density;
       if (Math.random() > iconsDensity * 10) return;
 
-      try{
-        for (const [cx, cy] of poissonDiscSampler(minX, minY, maxX, maxY, radius)) {
-          if (!d3.polygonContains(polygon, [cx, cy])) continue;
-          let h = (4 + Math.random()) * size;
-          const icon = getBiomeIcon(i, biomesData.icons[biome]);
-          if (icon === "#relief-grass-1") h *= 1.2;
-          relief.push({i: icon, x: rn(cx - h, 2), y: rn(cy - h, 2), s: rn(h * 2, 2)});
-        }
-      } catch {
-        // do nothing
+      for (const [cx, cy] of poissonDiscSampler(minX, minY, maxX, maxY, radius)) {
+        if (!d3.polygonContains(polygon, [cx, cy])) continue;
+        let h = (4 + Math.random()) * size;
+        const icon = getBiomeIcon(i, biomesData.icons[biome]);
+        if (icon === "#relief-grass-1") h *= 1.2;
+        relief.push({i: icon, x: rn(cx - h, 2), y: rn(cy - h, 2), s: rn(h * 2, 2)});
       }
     }
 
@@ -906,7 +912,7 @@ function ck3DrawBiomes() {
 
 function ck3GeoJsonCells() {
   const json = {type: "FeatureCollection", features: []};
-  const cells = pack.cells;
+
   const getPopulation = i => {
     const [r, u] = getCellPopulation(i);
     return rn(r + u);
@@ -1031,17 +1037,17 @@ async function exportCK3() {
 
 
 
-function saveGeoJSON_Routes() {
-  const json = {type: "FeatureCollection", features: []};
-
-  routes.selectAll("g > path").each(function () {
-    const coordinates = getRoutePoints(this);
-    const id = this.id;
-    const type = this.parentElement.id;
-
-    const feature = {type: "Feature", geometry: {type: "LineString", coordinates}, properties: {id, type}};
-    json.features.push(feature);
+function saveGeoJsonRoutes() {
+  const features = pack.routes.map(({i, points, group, name = null}) => {
+    const coordinates = points.map(([x, y]) => getCoordinates(x, y, 4));
+    const id = `route${i}`;
+    return {
+      type: "Feature",
+      geometry: {type: "LineString", coordinates},
+      properties: {id, group, name}
+    };
   });
+  const json = {type: "FeatureCollection", features};
 
   const fileName = getFileName("Routes") + ".geojson";
   downloadFile(JSON.stringify(json), fileName, "application/json");

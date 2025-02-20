@@ -8,33 +8,30 @@ function restoreDefaultEvents() {
   svg.call(zoom);
   viewbox.style("cursor", "default").on(".drag", null).on("click", clicked).on("touchmove mousemove", onMouseMove);
   legend.call(d3.drag().on("start", dragLegendBox));
+  svg.call(zoom);
 }
 
-// on viewbox click event - run function based on target
+// handle viewbox click
 function clicked() {
   const el = d3.event.target;
-  if (!el || !el.parentElement || !el.parentElement.parentElement) return;
-  const parent = el.parentElement;
-  const grand = parent.parentElement;
-  const great = grand.parentElement;
-  const p = d3.mouse(this);
-  const i = findCell(p[0], p[1]);
+  const parent = el?.parentElement;
+  const grand = parent?.parentElement;
+  const great = grand?.parentElement;
+  const ancestor = great?.parentElement;
+  if (!ancestor) return;
 
   if (grand.id === "emblems") editEmblem();
   else if (parent.id === "rivers") editRiver(el.id);
-  else if (grand.id === "routes") editRoute();
-  else if (el.tagName === "tspan" && grand.parentNode.parentNode.id === "labels") editLabel();
+  else if (grand.id === "routes") editRoute(el.id);
+  else if (ancestor.id === "labels" && el.tagName === "tspan") editLabel();
   else if (grand.id === "burgLabels") editBurg();
   else if (grand.id === "burgIcons") editBurg();
   else if (parent.id === "ice") editIce();
   else if (parent.id === "terrain") editReliefIcon();
   else if (grand.id === "markers" || great.id === "markers") editMarker();
   else if (grand.id === "coastline") editCoastline();
+  else if (grand.id === "lakes") editLake();
   else if (great.id === "armies") editRegiment();
-  else if (pack.cells.t[i] === 1) {
-    const node = byId("island_" + pack.cells.f[i]);
-    editCoastline(node);
-  } else if (grand.id === "lakes") editLake();
 }
 
 // clear elSelected variable
@@ -132,27 +129,43 @@ function applySorting(headers) {
 }
 
 function addBurg(point) {
-  const cells = pack.cells;
-  const x = rn(point[0], 2),
-    y = rn(point[1], 2);
-  const cell = findCell(x, point[1]);
-  const i = pack.burgs.length;
-  const culture = cells.culture[cell];
-  const name = Names.getCulture(culture);
-  const state = cells.state[cell];
-  const feature = cells.f[cell];
+  const {cells, states} = pack;
+  const x = rn(point[0], 2);
+  const y = rn(point[1], 2);
 
-  const temple = pack.states[state].form === "Theocracy";
-  const population = Math.max((cells.s[cell] + cells.road[cell]) / 3 + i / 1000 + (cell % 100) / 1000, 0.1);
-  const type = BurgsAndStates.getType(cell, false);
+  const cellId = findCell(x, y);
+  const i = pack.burgs.length;
+  const culture = cells.culture[cellId];
+  const name = Names.getCulture(culture);
+  const state = cells.state[cellId];
+  const feature = cells.f[cellId];
+
+  const population = Math.max(cells.s[cellId] / 3 + i / 1000 + (cellId % 100) / 1000, 0.1);
+  const type = BurgsAndStates.getType(cellId, false);
 
   // generate emblem
-  const coa = COA.generate(pack.states[state].coa, 0.25, null, type);
+  const coa = COA.generate(states[state].coa, 0.25, null, type);
   coa.shield = COA.getShield(culture, state);
   COArenderer.add("burg", i, coa, x, y);
 
-  pack.burgs.push({name, cell, x, y, state, i, culture, feature, capital: 0, port: 0, temple, population, coa, type});
-  cells.burg[cell] = i;
+  const burg = {
+    name,
+    cell: cellId,
+    x,
+    y,
+    state,
+    i,
+    culture,
+    feature,
+    capital: 0,
+    port: 0,
+    temple: 0,
+    population,
+    coa,
+    type
+  };
+  pack.burgs.push(burg);
+  cells.burg[cellId] = i;
 
   const townSize = burgIcons.select("#towns").attr("size") || 0.5;
   burgIcons
@@ -166,6 +179,7 @@ function addBurg(point) {
   burgLabels
     .select("#towns")
     .append("text")
+    .attr("text-rendering", "optimizeSpeed")
     .attr("id", "burgLabel" + i)
     .attr("data-id", i)
     .attr("x", x)
@@ -173,7 +187,17 @@ function addBurg(point) {
     .attr("dy", `${townSize * -1.5}px`)
     .text(name);
 
-  BurgsAndStates.defineBurgFeatures(pack.burgs[i]);
+  BurgsAndStates.defineBurgFeatures(burg);
+
+  const newRoute = Routes.connect(cellId);
+  if (newRoute && layerIsOn("toggleRoutes")) {
+    routes
+      .select("#" + newRoute.group)
+      .append("path")
+      .attr("d", Routes.getPath(newRoute))
+      .attr("id", "route" + newRoute.i);
+  }
+
   return i;
 }
 
@@ -223,17 +247,18 @@ function addBurgsGroup(group) {
 }
 
 function removeBurg(id) {
-  const label = document.querySelector("#burgLabels [data-id='" + id + "']");
-  const icon = document.querySelector("#burgIcons [data-id='" + id + "']");
-  const anchor = document.querySelector("#anchors [data-id='" + id + "']");
-  if (label) label.remove();
-  if (icon) icon.remove();
-  if (anchor) anchor.remove();
+  document.querySelector("#burgLabels [data-id='" + id + "']")?.remove();
+  document.querySelector("#burgIcons [data-id='" + id + "']")?.remove();
+  document.querySelector("#anchors [data-id='" + id + "']")?.remove();
 
-  const cells = pack.cells,
-    burg = pack.burgs[id];
+  const cells = pack.cells;
+  const burg = pack.burgs[id];
+
   burg.removed = true;
   cells.burg[burg.cell] = 0;
+
+  const noteId = notes.findIndex(note => note.id === `burg${id}`);
+  if (noteId !== -1) notes.splice(noteId, 1);
 
   if (burg.coa) {
     const coaId = "burgCOA" + id;
@@ -326,8 +351,7 @@ function createMfcgLink(burg) {
   const citadel = +burg.citadel;
   const urban_castle = +(citadel && each(2)(i));
 
-  const hub = +cells.road[cell] > 50;
-
+  const hub = Routes.isCrossroad(cell);
   const walls = +burg.walls;
   const plaza = +burg.plaza;
   const temple = +burg.temple;
@@ -371,10 +395,12 @@ function createVillageGeneratorLink(burg) {
   else if (cells.r[cell]) tags.push("river");
   else if (pop < 200 && each(4)(cell)) tags.push("pond");
 
-  const roadsAround = cells.c[cell].filter(c => cells.h[c] >= 20 && cells.road[c]).length;
-  if (roadsAround > 1) tags.push("highway");
-  else if (roadsAround === 1) tags.push("dead end");
-  else tags.push("isolated");
+  const roadsNumber = Object.values(pack.cells.routes[cell] || {}).filter(routeId => {
+    const route = pack.routes.find(route => route.i === routeId);
+    if (!route) return false;
+    return route.group === "roads" || route.group === "trails";
+  }).length;
+  tags.push(roadsNumber > 1 ? "highway" : roadsNumber === 1 ? "dead end" : "isolated");
 
   const biome = cells.biome[cell];
   const arableBiomes = cells.r[cell] ? [1, 2, 3, 4, 5, 6, 7, 8] : [5, 6, 7, 8];
@@ -439,6 +465,7 @@ function drawLegend(name, data) {
 
       labels
         .append("text")
+        .attr("text-rendering", "optimizeSpeed")
         .text(data[i][2])
         .attr("x", offset + colorBoxSize * 1.6)
         .attr("y", fontSize / 1.6 + lineHeight + l * lineHeight + vOffset);
@@ -449,6 +476,7 @@ function drawLegend(name, data) {
   const offset = colOffset + legend.node().getBBox().width / 2;
   labels
     .append("text")
+    .attr("text-rendering", "optimizeSpeed")
     .attr("text-anchor", "middle")
     .attr("font-weight", "bold")
     .attr("font-size", "1.2em")
@@ -488,13 +516,14 @@ function fitLegendBox() {
 
 // draw legend with the same data, but using different settings
 function redrawLegend() {
-  if (!legend.select("rect").size()) return;
-  const name = legend.select("#legendLabel").text();
-  const data = legend
-    .attr("data")
-    .split("|")
-    .map(l => l.split(","));
-  drawLegend(name, data);
+  if (legend.select("rect").size()) {
+    const name = legend.select("#legendLabel").text();
+    const data = legend
+      .attr("data")
+      .split("|")
+      .map(l => l.split(","));
+    drawLegend(name, data);
+  }
 }
 
 function dragLegendBox() {
@@ -1139,25 +1168,66 @@ function selectIcon(initial, callback) {
       const cell = row.insertCell(i % 17);
       cell.innerHTML = icons[i];
     }
+
+    // find external images used as icons and show them
+    const externalResources = new Set();
+    const isExternal = url => url.startsWith("http");
+
+    options.military.forEach(unit => {
+      if (isExternal(unit.icon)) externalResources.add(unit.icon);
+    });
+
+    pack.states.forEach(state => {
+      state?.military?.forEach(regiment => {
+        if (isExternal(regiment.icon)) externalResources.add(regiment.icon);
+      });
+    });
+
+    externalResources.forEach(addExternalImage);
   }
 
-  input.oninput = e => callback(input.value);
+  input.oninput = () => callback(input.value);
+
   table.onclick = e => {
     if (e.target.tagName === "TD") {
       input.value = e.target.textContent;
       callback(input.value);
     }
   };
+
   table.onmouseover = e => {
     if (e.target.tagName === "TD") tip(`Click to select ${e.target.textContent} icon`);
   };
+
+  function addExternalImage(url) {
+    const addedIcons = byId("addedIcons");
+    const image = document.createElement("div");
+    image.style.cssText = `width: 2.2em; height: 2.2em; background-size: cover; background-image: url(${url})`;
+    addedIcons.appendChild(image);
+    image.onclick = () => callback(ulr);
+  }
+
+  byId("addImage").onclick = function () {
+    const input = this.previousElementSibling;
+    const ulr = input.value;
+    if (!ulr) return tip("Enter image URL to add", false, "error", 4000);
+    if (!ulr.match(/^(http|https):\/\//)) return tip("Enter valid URL", false, "error", 4000);
+    addExternalImage(ulr);
+    callback(ulr);
+    input.value = "";
+  };
+
+  byId("addedIcons")
+    .querySelectorAll("div")
+    .forEach(div => {
+      div.onclick = () => callback(div.style.backgroundImage.slice(5, -2));
+    });
 
   $("#iconSelector").dialog({
     width: fitContent(),
     title: "Select Icon",
     buttons: {
       Apply: function () {
-        callback(input.value || "⠀");
         $(this).dialog("close");
       },
       Close: function () {
@@ -1173,7 +1243,6 @@ function getAreaUnit(squareMark = "²") {
 }
 
 function getArea(rawArea) {
-  const distanceScale = byId("distanceScaleInput")?.value;
   return rawArea * distanceScale ** 2;
 }
 
@@ -1224,18 +1293,18 @@ function refreshAllEditors() {
 // dynamically loaded editors
 async function editStates() {
   if (customization) return;
-  const Editor = await import("../dynamic/editors/states-editor.js?v=1.97.06");
+  const Editor = await import("../dynamic/editors/states-editor.js?v=1.108.1");
   Editor.open();
 }
 
 async function editCultures() {
   if (customization) return;
-  const Editor = await import("../dynamic/editors/cultures-editor.js?v=1.96.01");
+  const Editor = await import("../dynamic/editors/cultures-editor.js?v=1.105.23");
   Editor.open();
 }
 
 async function editReligions() {
   if (customization) return;
-  const Editor = await import("../dynamic/editors/religions-editor.js?v=1.96.00");
+  const Editor = await import("../dynamic/editors/religions-editor.js?v=1.104.0");
   Editor.open();
 }

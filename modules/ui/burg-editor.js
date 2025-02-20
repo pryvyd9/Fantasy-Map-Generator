@@ -2,7 +2,7 @@
 function editBurg(id) {
   if (customization) return;
   closeDialogs(".stable");
-  if (!layerIsOn("toggleIcons")) toggleIcons();
+  if (!layerIsOn("toggleBurgIcons")) toggleBurgIcons();
   if (!layerIsOn("toggleLabels")) toggleLabels();
 
   const burg = id || d3.event.target.dataset.id;
@@ -47,6 +47,7 @@ function editBurg(id) {
   byId("burgEmblem").addEventListener("click", openEmblemEdit);
   byId("burgTogglePreview").addEventListener("click", toggleBurgPreview);
   byId("burgEditEmblem").addEventListener("click", openEmblemEdit);
+  byId("burgLocate").addEventListener("click", zoomIntoBurg);
   byId("burgRelocate").addEventListener("click", toggleRelocateBurg);
   byId("burglLegend").addEventListener("click", editBurgLegend);
   byId("burgLock").addEventListener("click", toggleBurgLockButton);
@@ -74,7 +75,8 @@ function editBurg(id) {
 
     const temperature = grid.cells.temp[pack.cells.g[b.cell]];
     byId("burgTemperature").innerHTML = convertTemperature(temperature);
-    byId("burgTemperatureLikeIn").innerHTML = getTemperatureLikeness(temperature);
+    byId("burgTemperatureLikeIn").dataset.tip =
+      "Average yearly temperature is like in " + getTemperatureLikeness(temperature);
     byId("burgElevation").innerHTML = getHeight(pack.cells.h[b.cell]);
 
     // toggle features
@@ -228,34 +230,26 @@ function editBurg(id) {
     const burgsToRemove = burgsInGroup.filter(b => !(pack.burgs[b].capital || pack.burgs[b].lock));
     const capital = burgsToRemove.length < burgsInGroup.length;
 
-    alertMessage.innerHTML = /* html */ `Are you sure you want to remove ${
-      basic || capital ? "all unlocked elements in the burg group" : "the entire burg group"
-    }?
-      <br />Please note that capital or locked burgs will not be deleted. <br /><br />Burgs to be removed: ${
-        burgsToRemove.length
-      }`;
-    $("#alert").dialog({
-      resizable: false,
+    confirmationDialog({
       title: "Remove burg group",
-      buttons: {
-        Remove: function () {
-          $(this).dialog("close");
-          $("#burgEditor").dialog("close");
-          hideGroupSection();
-          burgsToRemove.forEach(b => removeBurg(b));
+      message: `Are you sure you want to remove ${
+        basic || capital ? "all unlocked elements in the burg group" : "the entire burg group"
+      }?<br />Please note that capital or locked burgs will not be deleted. <br /><br />Burgs to be removed: ${
+        burgsToRemove.length
+      }. This action cannot be reverted`,
+      confirm: "Remove",
+      onConfirm: () => {
+        $("#burgEditor").dialog("close");
+        hideGroupSection();
+        burgsToRemove.forEach(b => removeBurg(b));
 
-          if (!basic && !capital) {
-            // entirely remove group
-            const labelG = document.querySelector("#burgLabels > #" + group.id);
-            const iconG = document.querySelector("#burgIcons > #" + group.id);
-            const anchorG = document.querySelector("#anchors > #" + group.id);
-            if (labelG) labelG.remove();
-            if (iconG) iconG.remove();
-            if (anchorG) anchorG.remove();
-          }
-        },
-        Cancel: function () {
-          $(this).dialog("close");
+        if (!basic && !capital) {
+          const labelG = document.querySelector("#burgLabels > #" + group.id);
+          const iconG = document.querySelector("#burgIcons > #" + group.id);
+          const anchorG = document.querySelector("#anchors > #" + group.id);
+          if (labelG) labelG.remove();
+          if (iconG) iconG.remove();
+          if (anchorG) anchorG.remove();
         }
       }
     });
@@ -405,6 +399,14 @@ function editBurg(id) {
     byId("burgTogglePreview").className = options.showBurgPreview ? "icon-map" : "icon-map-o";
   }
 
+  function zoomIntoBurg() {
+    const id = +elSelected.attr("data-id");
+    const burg = pack.burgs[id];
+    const x = burg.x;
+    const y = burg.y;
+    zoomTo(x, y, 8, 2000);
+  }
+
   function toggleRelocateBurg() {
     const toggler = byId("toggleCells");
     byId("burgRelocate").classList.toggle("pressed");
@@ -509,19 +511,13 @@ function editBurg(id) {
         }
       });
     } else {
-      alertMessage.innerHTML = "Are you sure you want to remove the burg?";
-      $("#alert").dialog({
-        resizable: false,
+      confirmationDialog({
         title: "Remove burg",
-        buttons: {
-          Remove: function () {
-            $(this).dialog("close");
-            removeBurg(id); // see Editors module
-            $("#burgEditor").dialog("close");
-          },
-          Cancel: function () {
-            $(this).dialog("close");
-          }
+        message: "Are you sure you want to remove the burg? <br>This action cannot be reverted",
+        confirm: "Remove",
+        onConfirm: () => {
+          removeBurg(id); // see Editors module
+          $("#burgEditor").dialog("close");
         }
       });
     }
@@ -535,46 +531,47 @@ function editBurg(id) {
 }
 
 // in °C, array from -1 °C; source: https://en.wikipedia.org/wiki/List_of_cities_by_average_temperature
+const meanTempCityMap = {
+  "-5": "Snag (Yukon)",
+  "-4": "Yellowknife (Canada)",
+  "-3": "Okhotsk (Russia)",
+  "-2": "Fairbanks (Alaska)",
+  "-1": "Nuuk (Greenland)",
+  0: "Murmansk (Russia)",
+  1: "Arkhangelsk (Russia)",
+  2: "Anchorage (Alaska)",
+  3: "Tromsø (Norway)",
+  4: "Reykjavik (Iceland)",
+  5: "Harbin (China)",
+  6: "Stockholm (Sweden)",
+  7: "Montreal (Canada)",
+  8: "Prague (Czechia)",
+  9: "Copenhagen (Denmark)",
+  10: "London (England)",
+  11: "Antwerp (Belgium)",
+  12: "Paris (France)",
+  13: "Milan (Italy)",
+  14: "Washington (D.C.)",
+  15: "Rome (Italy)",
+  16: "Dubrovnik (Croatia)",
+  17: "Lisbon (Portugal)",
+  18: "Barcelona (Spain)",
+  19: "Marrakesh (Morocco)",
+  20: "Alexandria (Egypt)",
+  21: "Tegucigalpa (Honduras)",
+  22: "Guangzhou (China)",
+  23: "Rio de Janeiro (Brazil)",
+  24: "Dakar (Senegal)",
+  25: "Miami (USA)",
+  26: "Jakarta (Indonesia)",
+  27: "Mogadishu (Somalia)",
+  28: "Bangkok (Thailand)",
+  29: "Niamey (Niger)",
+  30: "Khartoum (Sudan)"
+};
+
 function getTemperatureLikeness(temperature) {
-  if (temperature < -5) return "Yakutsk";
-  const cities = [
-    "Snag (Yukon)",
-    "Yellowknife (Canada)",
-    "Okhotsk (Russia)",
-    "Fairbanks (Alaska)",
-    "Nuuk (Greenland)",
-    "Murmansk", // -5 - 0
-    "Arkhangelsk",
-    "Anchorage",
-    "Tromsø",
-    "Reykjavik",
-    "Riga",
-    "Stockholm",
-    "Halifax",
-    "Prague",
-    "Copenhagen",
-    "London", // 1 - 10
-    "Antwerp",
-    "Paris",
-    "Milan",
-    "Batumi",
-    "Rome",
-    "Dubrovnik",
-    "Lisbon",
-    "Barcelona",
-    "Marrakesh",
-    "Alexandria", // 11 - 20
-    "Tegucigalpa",
-    "Guangzhou",
-    "Rio de Janeiro",
-    "Dakar",
-    "Miami",
-    "Jakarta",
-    "Mogadishu",
-    "Bangkok",
-    "Aden",
-    "Khartoum"
-  ]; // 21 - 30
-  if (temperature > 30) return "Mecca";
-  return cities[temperature + 5] || null;
+  if (temperature < -5) return "Yakutsk (Russia)";
+  if (temperature > 30) return "Mecca (Saudi Arabia)";
+  return meanTempCityMap[temperature] || null;
 }
