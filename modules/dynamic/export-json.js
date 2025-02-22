@@ -23,7 +23,7 @@ export function exportToJson(type) {
   TIME && console.timeEnd("exportToJson");
 }
 
-function getFullDataJson() {
+export function getFullDataJson() {
   const info = getMapInfo();
   const settings = getSettings();
   const pack = getPackCellsData();
