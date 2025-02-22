@@ -1402,8 +1402,9 @@ function ck3DrawBiomes() {
 }
 
 function ck3GeoJsonCells() {
+  const {cells, vertices} = pack;
   const json = {type: "FeatureCollection", features: []};
-  const cells = pack.cells;
+  
   const getPopulation = i => {
     const [r, u] = getCellPopulation(i);
     return rn(r + u);
