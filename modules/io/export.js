@@ -1410,6 +1410,14 @@ function ck3GeoJsonCells() {
   };
   const getHeight = i => parseInt(getFriendlyHeight([cells.p[i][0], cells.p[i][1]]));
 
+  function getCellCoordinates(cellVertices) {
+    const coordinates = cellVertices.map(vertex => {
+      const [x, y] = vertices.p[vertex];
+      return getCoordinates(x, y, 4);
+    });
+    return [[...coordinates, coordinates[0]]];
+  }
+
   cells.i.forEach(i => {
     const coordinates = getCellCoordinates(cells.v[i]);
     const height = getHeight(i);
