@@ -498,14 +498,6 @@ async function parseLoadedData(data, mapVersion) {
       const featureVerticesMismatch = pack.features.some(f => f?.vertices?.some(vertex => !vertices.p[vertex]));
 
       if (cellsMismatch || featureVerticesMismatch) {
-        // Try loading with cell optimizations
-        if (!document.isCompatibilityMode) {
-          document.isCompatibilityMode = true;
-          parseLoadedData(data, mapVersion);
-          return;
-        }
-        document.isCompatibilityMode = false;
-
         const message = "[Data integrity] Striping issue detected. To fix try to edit the heightmap in ERASE mode";
         throw new Error(message);
       }
