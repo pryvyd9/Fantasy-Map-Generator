@@ -873,7 +873,6 @@ byId("mapToLoadCompatibility").addEventListener("change", function () {
   this.value = "";
   closeDialogs();
   uploadMap(fileToLoad);
-  document.isCompatibilityMode = false;
 });
 
 function openExportToPngTiles() {
