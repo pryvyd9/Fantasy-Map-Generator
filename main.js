@@ -1143,6 +1143,8 @@ function reGraph() {
     }
   }
 
+  document.isCompatibilityMode = false;
+
   function addNewPoint(i, x, y, height) {
     newCells.p.push([x, y]);
     newCells.g.push(i);
