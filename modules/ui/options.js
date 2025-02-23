@@ -866,6 +866,16 @@ byId("mapToLoad").addEventListener("change", function () {
   uploadMap(fileToLoad);
 });
 
+// load map compatibility
+byId("mapToLoadCompatibility").addEventListener("change", function () {
+  document.isCompatibilityMode = true;
+  const fileToLoad = this.files[0];
+  this.value = "";
+  closeDialogs();
+  uploadMap(fileToLoad);
+  document.isCompatibilityMode = false;
+});
+
 function openExportToPngTiles() {
   byId("tileStatus").innerHTML = "";
   closeDialogs();
