@@ -1118,10 +1118,12 @@ function reGraph() {
     const height = gridCells.h[i];
     const type = gridCells.t[i];
 
-    // if (height < 20 && type !== -1) continue; // exclude all deep ocean points
-    // if (height < 20 && type !== -1 && type !== -2) continue; // exclude all deep ocean points
-    // if (type === -2 && (i % 4 === 0 || features[gridCells.f[i]].type === "lake")) continue; // exclude non-coastal lake points
-
+    if (document.isCompatibilityMode) {
+      if (height < 20 && type !== -1) continue; // exclude all deep ocean points
+      if (height < 20 && type !== -1 && type !== -2) continue; // exclude all deep ocean points
+      if (type === -2 && (i % 4 === 0 || features[gridCells.f[i]].type === "lake")) continue; // exclude non-coastal lake points
+    }
+    
     const [x, y] = points[i];
     addNewPoint(i, x, y, height);
 
