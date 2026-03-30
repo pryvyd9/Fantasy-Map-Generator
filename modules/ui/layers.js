@@ -604,7 +604,10 @@ function drawKingdoms() {
   const isolines = getIsolines(pack, getKingdomId, {fill: true, waterGap: true});
   Object.entries(isolines).forEach(([index, {fill, waterGap}]) => {
     const color = kingdoms[index]?.color || "#aaaaaa";
-    bodyPaths.push(getGappedFillPaths("kingdom", fill, waterGap, color, index));
+    let html = "";
+    if (fill) html += /* html */ `<path d="${fill}" fill="${color}" fill-opacity="0.5" id="kingdom${index}" />`;
+    if (waterGap) html += /* html */ `<path d="${waterGap}" fill="none" stroke="${color}" stroke-width="3" id="kingdom-gap${index}" />`;
+    bodyPaths.push(html);
   });
 
   byId("kingdomRegions").innerHTML = bodyPaths.join("");

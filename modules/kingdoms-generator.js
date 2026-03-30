@@ -80,106 +80,141 @@ window.Kingdoms = (function () {
       const memberIds = [s.i, ...vassalIds];
       const kingdomId = kingdoms.length;
       const formName = ra(kingdomForms[getDominantForm(memberIds)] || kingdomForms.Monarchy);
+      // Kingdom color: slightly darker than the capital state color
+      const color = d3.color(s.color)?.darker(0.5).hex() || s.color;
       kingdoms.push({
         i: kingdomId,
         name: s.name,
         fullName: buildFullName(s.name, formName, adjFormNames),
         formName,
-        color: s.color,
+        color,
         capital: s.i,
         states: memberIds
       });
       memberIds.forEach(id => { if (states[id]) states[id].kingdom = kingdomId; });
     }
 
-    // ── Step 2: Additional kingdoms from independent states ───────────────
-    const targetAssigned = Math.round(validStates.length * kingdomsRatio / 100);
-    let assignedCount = validStates.filter(s => s.kingdom).length;
+    // ── Step 2: All remaining states get kingdoms ─────────────────────────
+    // kingdomsRatio controls grouping density: 0 = each state its own kingdom,
+    // 100 = maximum merging of neighbors into fewer, larger kingdoms.
+    // Every state will always end up in a kingdom.
+    const maxNeighborsToAbsorb = Math.round(kingdomsRatio / 25); // 0–4
 
-    // High-tier independents first; they may absorb unassigned neighbors
     const needsKingdom = s => s.i && !s.removed && !s.kingdom;
     const byTierDesc = (a, b) => getStateTier(b) - getStateTier(a);
 
     for (const s of validStates.filter(needsKingdom).sort(byTierDesc)) {
-      if (assignedCount >= targetAssigned) break;
       if (s.kingdom) continue;
 
       const memberIds = [s.i];
 
-      // Absorb unassigned neighboring low-tier states (greedy)
-      for (const neighborId of (s.neighbors || [])) {
-        if (assignedCount + memberIds.length >= targetAssigned + 1) break;
-        const neighbor = states[neighborId];
-        if (!neighbor || neighbor.removed || neighbor.kingdom) continue;
-        if (getStateTier(neighbor) < 3) memberIds.push(neighborId);
+      // Absorb unassigned neighboring low-tier states up to the allowed count
+      if (maxNeighborsToAbsorb > 0) {
+        for (const neighborId of (s.neighbors || [])) {
+          if (memberIds.length - 1 >= maxNeighborsToAbsorb) break;
+          const neighbor = states[neighborId];
+          if (!neighbor || neighbor.removed || neighbor.kingdom) continue;
+          if (getStateTier(neighbor) < 3) memberIds.push(neighborId);
+        }
       }
 
       const kingdomId = kingdoms.length;
       const formName = ra(kingdomForms[getDominantForm(memberIds)] || kingdomForms.Monarchy);
+      const color = d3.color(s.color)?.darker(0.5).hex() || s.color;
       kingdoms.push({
         i: kingdomId,
         name: s.name,
         fullName: buildFullName(s.name, formName, adjFormNames),
         formName,
-        color: s.color,
+        color,
         capital: s.i,
         states: memberIds
       });
       memberIds.forEach(id => { if (states[id]) states[id].kingdom = kingdomId; });
-      assignedCount += memberIds.length;
     }
 
     pack.kingdoms = kingdoms;
 
-    // ── Step 3: Empires from empire-tier kingdoms ─────────────────────────
+    // ── Step 3: Empires via BFS flood-fill from largest-kingdom seeds ─────
+    // All kingdoms are assigned to an empire when empiresNumber > 0.
+    const kingdomNeighbors = buildKingdomNeighbors(kingdoms, states);
+
     if (empiresNumberTarget > 0 && kingdoms.length > 2) {
-      // Find kingdoms with empire-tier (tier 4) capital states, largest first
-      const empireSeeds = kingdoms
-        .filter(k => k.i && getStateTier(states[k.capital]) === 4)
-        .sort((a, b) => {
-          const aArea = a.states.reduce((sum, id) => sum + (states[id]?.area || 0), 0);
-          const bArea = b.states.reduce((sum, id) => sum + (states[id]?.area || 0), 0);
-          return bArea - aArea;
-        })
-        .slice(0, empiresNumberTarget);
+      const kingdomArea = k => k.states.reduce((sum, id) => sum + (states[id]?.area || 0), 0);
+      const validKingdoms = kingdoms.filter(k => k.i);
 
-      for (const seed of empireSeeds) {
-        if (seed.empire) continue; // already absorbed into a larger empire
+      // Seed from the N largest kingdoms
+      const seeds = validKingdoms
+        .slice()
+        .sort((a, b) => kingdomArea(b) - kingdomArea(a))
+        .slice(0, Math.min(empiresNumberTarget, validKingdoms.length));
 
+      for (const seed of seeds) {
         const empireId = empires.length;
-        const empireKingdomIds = [seed.i];
-
-        // Add kingdoms whose capital state is a Vassal of the seed's capital
-        for (const k of kingdoms) {
-          if (!k.i || k.i === seed.i) continue;
-          const cap = states[k.capital];
-          if (!cap?.diplomacy) continue;
-          if (cap.diplomacy[seed.capital] === "Vassal") empireKingdomIds.push(k.i);
-        }
-
-        const formName = ra(empireForms[getDominantForm(seed.states)] || empireForms.Monarchy);
         const capitalState = states[seed.capital];
+        const formName = ra(empireForms[getDominantForm(seed.states)] || empireForms.Monarchy);
+        // Empire color: darker than kingdom (derived from capital state color)
+        const empireColor = d3.color(capitalState.color)?.darker(1.0).hex() || capitalState.color;
         empires.push({
           i: empireId,
           name: capitalState.name,
           fullName: buildFullName(capitalState.name, formName, adjFormNames),
           formName,
-          color: seed.color,
+          color: empireColor,
           capital: seed.i,
-          kingdoms: empireKingdomIds
+          kingdoms: [seed.i]
         });
+        seed.empire = empireId;
+        seed.states.forEach(sId => { if (states[sId]) states[sId].empire = empireId; });
+      }
 
-        // Mark kingdoms and their member states
-        empireKingdomIds.forEach(kId => {
-          if (kingdoms[kId]) kingdoms[kId].empire = empireId;
-          kingdoms[kId]?.states.forEach(sId => { if (states[sId]) states[sId].empire = empireId; });
-        });
+      // BFS: expand all empire frontiers simultaneously until every kingdom is assigned
+      const assigned = new Set(seeds.map(k => k.i));
+      const queue = seeds.map(k => k.i);
+
+      while (queue.length) {
+        const kId = queue.shift();
+        const empireId = kingdoms[kId].empire;
+        for (const neighborKId of (kingdomNeighbors.get(kId) || [])) {
+          if (assigned.has(neighborKId)) continue;
+          assigned.add(neighborKId);
+          queue.push(neighborKId);
+          kingdoms[neighborKId].empire = empireId;
+          empires[empireId].kingdoms.push(neighborKId);
+          kingdoms[neighborKId].states.forEach(sId => { if (states[sId]) states[sId].empire = empireId; });
+        }
+      }
+
+      // Fallback: isolated kingdoms (island states with no neighbor kingdoms) → largest empire
+      for (const k of kingdoms.filter(k => k.i && !k.empire)) {
+        const biggest = empires.filter(e => e.i).sort((a, b) => b.kingdoms.length - a.kingdoms.length)[0];
+        if (!biggest) continue;
+        k.empire = biggest.i;
+        biggest.kingdoms.push(k.i);
+        k.states.forEach(sId => { if (states[sId]) states[sId].empire = biggest.i; });
       }
     }
 
     pack.empires = empires;
     TIME && console.timeEnd("generateKingdoms");
   };
+
+  // Build a Map of kingdomId → Set of neighboring kingdomIds (share at least one state border)
+  function buildKingdomNeighbors(kingdoms, states) {
+    const map = new Map();
+    kingdoms.forEach(k => { if (k.i) map.set(k.i, new Set()); });
+
+    for (const s of Object.values(states)) {
+      if (!s?.i || s.removed || !s.kingdom) continue;
+      for (const neighborId of (s.neighbors || [])) {
+        const ns = states[neighborId];
+        if (!ns || ns.removed || !ns.kingdom || ns.kingdom === s.kingdom) continue;
+        map.get(s.kingdom)?.add(ns.kingdom);
+        map.get(ns.kingdom)?.add(s.kingdom);
+      }
+    }
+    return map;
+  }
 
   // Returns the most common government form category among given stateIds
   function getDominantForm(stateIds) {
