@@ -102,6 +102,8 @@ function prepareMapData() {
   const cellRoutes = JSON.stringify(pack.cells.routes);
   const routes = JSON.stringify(pack.routes);
   const zones = JSON.stringify(pack.zones);
+  const kingdoms = JSON.stringify(pack.kingdoms || [0]);
+  const empires = JSON.stringify(pack.empires || [0]);
 
   // store name array only if not the same as default
   const defaultNB = Names.getNameBases();
@@ -155,7 +157,9 @@ function prepareMapData() {
     markers,
     cellRoutes,
     routes,
-    zones
+    zones,
+    kingdoms,   // data[39]
+    empires     // data[40]
   ].join("\r\n");
   return mapData;
 }

@@ -54,7 +54,9 @@ function getMinimalDataJson() {
     rivers: pack.rivers,
     markers: pack.markers,
     routes: pack.routes,
-    zones: pack.zones
+    zones: pack.zones,
+    kingdoms: pack.kingdoms,
+    empires: pack.empires
   };
   return JSON.stringify({info, settings, mapCoordinates, pack: packData, biomesData, notes, nameBases});
 }
@@ -174,7 +176,9 @@ function getPackCellsData() {
     rivers: pack.rivers,
     markers: pack.markers,
     routes: pack.routes,
-    zones: pack.zones
+    zones: pack.zones,
+    kingdoms: pack.kingdoms,
+    empires: pack.empires
   };
 }
 

@@ -10,6 +10,8 @@ function getDefaultPresets() {
       "toggleBorders",
       "toggleBurgIcons",
       "toggleIce",
+      "toggleKingdoms",
+      "toggleEmpires",
       "toggleLabels",
       "toggleRivers",
       "toggleRoutes",
@@ -195,6 +197,8 @@ function drawLayers() {
   if (layerIsOn("toggleRelief")) drawReliefIcons();
   if (layerIsOn("toggleReligions")) drawReligions();
   if (layerIsOn("toggleCultures")) drawCultures();
+  if (layerIsOn("toggleEmpires")) drawEmpires();
+  if (layerIsOn("toggleKingdoms")) drawKingdoms();
   if (layerIsOn("toggleStates")) drawStates();
   if (layerIsOn("toggleProvinces")) drawProvinces();
   if (layerIsOn("toggleZones")) drawZones();
@@ -574,6 +578,74 @@ function toggleBorders(event) {
   }
 }
 
+function toggleKingdoms(event) {
+  if (!layerIsOn("toggleKingdoms")) {
+    turnButtonOn("toggleKingdoms");
+    drawKingdoms();
+    if (event && isCtrlClick(event)) editStyle("kingdomRegions");
+  } else {
+    if (event && isCtrlClick(event)) return editStyle("kingdomRegions");
+    kingdomRegions.selectAll("*").remove();
+    turnButtonOff("toggleKingdoms");
+  }
+}
+
+function drawKingdoms() {
+  TIME && console.time("drawKingdoms");
+  const {states, kingdoms} = pack;
+  if (!kingdoms?.length) return;
+
+  const getKingdomId = cellId => {
+    const s = pack.cells.state[cellId];
+    return s ? (states[s]?.kingdom || 0) : 0;
+  };
+
+  const bodyPaths = new Array(kingdoms.length - 1);
+  const isolines = getIsolines(pack, getKingdomId, {fill: true, waterGap: true});
+  Object.entries(isolines).forEach(([index, {fill, waterGap}]) => {
+    const color = kingdoms[index]?.color || "#aaaaaa";
+    bodyPaths.push(getGappedFillPaths("kingdom", fill, waterGap, color, index));
+  });
+
+  byId("kingdomRegions").innerHTML = bodyPaths.join("");
+  TIME && console.timeEnd("drawKingdoms");
+}
+
+function toggleEmpires(event) {
+  if (!layerIsOn("toggleEmpires")) {
+    turnButtonOn("toggleEmpires");
+    drawEmpires();
+    if (event && isCtrlClick(event)) editStyle("empireRegions");
+  } else {
+    if (event && isCtrlClick(event)) return editStyle("empireRegions");
+    empireRegions.selectAll("*").remove();
+    turnButtonOff("toggleEmpires");
+  }
+}
+
+function drawEmpires() {
+  TIME && console.time("drawEmpires");
+  const {states, kingdoms, empires} = pack;
+  if (!empires?.length) return;
+
+  const getEmpireId = cellId => {
+    const s = pack.cells.state[cellId];
+    if (!s) return 0;
+    const k = states[s]?.kingdom;
+    return k ? (kingdoms[k]?.empire || 0) : 0;
+  };
+
+  const bodyPaths = new Array(empires.length - 1);
+  const isolines = getIsolines(pack, getEmpireId, {fill: true, waterGap: true});
+  Object.entries(isolines).forEach(([index, {fill, waterGap}]) => {
+    const color = empires[index]?.color || "#aaaaaa";
+    bodyPaths.push(getGappedFillPaths("empire", fill, waterGap, color, index));
+  });
+
+  byId("empireRegions").innerHTML = bodyPaths.join("");
+  TIME && console.timeEnd("drawEmpires");
+}
+
 function toggleProvinces(event) {
   if (!layerIsOn("toggleProvinces")) {
     turnButtonOn("toggleProvinces");
@@ -886,6 +958,8 @@ function toggleLabels(event) {
 function drawLabels() {
   drawStateLabels();
   drawBurgLabels();
+  drawKingdomLabels();
+  drawEmpireLabels();
   invokeActiveZooming();
 }
 
@@ -1024,6 +1098,8 @@ function getLayer(id) {
   if (id === "toggleRelief") return $("#terrain");
   if (id === "toggleReligions") return $("#relig");
   if (id === "toggleCultures") return $("#cults");
+  if (id === "toggleEmpires") return $("#empireRegions");
+  if (id === "toggleKingdoms") return $("#kingdomRegions");
   if (id === "toggleStates") return $("#regions");
   if (id === "toggleProvinces") return $("#provs");
   if (id === "toggleBorders") return $("#borders");

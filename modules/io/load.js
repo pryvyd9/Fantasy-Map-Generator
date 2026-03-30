@@ -392,6 +392,14 @@ async function parseLoadedData(data, mapVersion) {
       pack.markers = data[35] ? JSON.parse(data[35]) : [];
       pack.routes = data[37] ? JSON.parse(data[37]) : [];
       pack.zones = data[38] ? JSON.parse(data[38]) : [];
+      pack.kingdoms = data[39] ? JSON.parse(data[39]) : [0];
+      pack.empires = data[40] ? JSON.parse(data[40]) : [0];
+      // Patch kingdom/empire fields on states loaded from older saves
+      pack.states.forEach(s => {
+        if (s.kingdom === undefined) s.kingdom = 0;
+        if (s.empire === undefined) s.empire = 0;
+      });
+      if (pack.kingdoms) pack.kingdoms.forEach(k => { if (k?.empire === undefined) k.empire = 0; });
       pack.cells.biome = Uint8Array.from(data[16].split(","));
       pack.cells.burg = Uint16Array.from(data[17].split(","));
       pack.cells.conf = Uint8Array.from(data[18].split(","));
@@ -444,6 +452,8 @@ async function parseLoadedData(data, mapVersion) {
       if (hasChildren(cults)) turnOn("toggleCultures");
       if (hasChildren(statesBody)) turnOn("toggleStates");
       if (hasChildren(provs)) turnOn("toggleProvinces");
+      if (hasChildren(kingdomRegions) && isVisible(kingdomRegions)) turnOn("toggleKingdoms");
+      if (hasChildren(empireRegions) && isVisible(empireRegions)) turnOn("toggleEmpires");
       if (hasChildren(zones) && isVisible(zones)) turnOn("toggleZones");
       if (isVisible(borders) && hasChild(borders, "path")) turnOn("toggleBorders");
       if (isVisible(routes) && hasChild(routes, "path")) turnOn("toggleRoutes");

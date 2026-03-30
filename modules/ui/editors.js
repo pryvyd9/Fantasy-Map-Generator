@@ -1287,6 +1287,8 @@ function refreshAllEditors() {
   if (byId("religionsEditorRefresh")?.offsetParent) religionsEditorRefresh.click();
   if (byId("statesEditorRefresh")?.offsetParent) statesEditorRefresh.click();
   if (byId("zonesEditorRefresh")?.offsetParent) zonesEditorRefresh.click();
+  if (byId("kingdomsEditorRefresh")?.offsetParent) kingdomsEditorRefresh.click();
+  if (byId("empiresEditorRefresh")?.offsetParent) empiresEditorRefresh.click();
   TIME && console.timeEnd("refreshAllEditors");
 }
 
@@ -1294,6 +1296,18 @@ function refreshAllEditors() {
 async function editStates() {
   if (customization) return;
   const Editor = await import("../dynamic/editors/states-editor.js?v=1.108.1");
+  Editor.open();
+}
+
+async function editKingdoms() {
+  if (customization) return;
+  const Editor = await import("../dynamic/editors/kingdoms-editor.js?v=1.109.0");
+  Editor.open();
+}
+
+async function editEmpires() {
+  if (customization) return;
+  const Editor = await import("../dynamic/editors/empires-editor.js?v=1.109.0");
   Editor.open();
 }
 

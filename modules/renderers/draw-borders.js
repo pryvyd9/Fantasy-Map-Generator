@@ -6,9 +6,22 @@ function drawBorders() {
 
   const statePath = [];
   const provincePath = [];
+  const kingdomPath = [];
+  const empirePath = [];
   const checked = {};
 
   const isLand = cellId => cells.h[cellId] >= 20;
+
+  const getKingdom = cellId => {
+    const s = cells.state[cellId];
+    return s ? (pack.states[s]?.kingdom || 0) : 0;
+  };
+  const getEmpire = cellId => {
+    const s = cells.state[cellId];
+    if (!s) return 0;
+    const k = pack.states[s]?.kingdom;
+    return k ? (pack.kingdoms[k]?.empire || 0) : 0;
+  };
 
   for (let cellId = 0; cellId < cells.i.length; cellId++) {
     if (!cells.state[cellId]) continue;
@@ -55,14 +68,62 @@ function drawBorders() {
         continue;
       }
     }
+
+    // if cell is on kingdom border
+    if (pack.kingdoms?.length > 1) {
+      const kingdomId = getKingdom(cellId);
+      if (kingdomId) {
+        const kingdomToCell = cells.c[cellId].find(neibId => {
+          const neibKingdom = getKingdom(neibId);
+          return isLand(neibId) && kingdomId > neibKingdom && !checked[`kingdom-${kingdomId}-${neibKingdom}-${cellId}`];
+        });
+
+        if (kingdomToCell !== undefined) {
+          const neibKingdom = getKingdom(kingdomToCell);
+          const addToChecked = id => (checked[`kingdom-${kingdomId}-${neibKingdom}-${id}`] = true);
+          const border = getBorder({fromCell: cellId, toCell: kingdomToCell, addToChecked, getTypeFn: getKingdom});
+
+          if (border) {
+            kingdomPath.push(border);
+            cellId--;
+            continue;
+          }
+        }
+      }
+    }
+
+    // if cell is on empire border
+    if (pack.empires?.length > 1) {
+      const empireId = getEmpire(cellId);
+      if (empireId) {
+        const empireToCell = cells.c[cellId].find(neibId => {
+          const neibEmpire = getEmpire(neibId);
+          return isLand(neibId) && empireId > neibEmpire && !checked[`empire-${empireId}-${neibEmpire}-${cellId}`];
+        });
+
+        if (empireToCell !== undefined) {
+          const neibEmpire = getEmpire(empireToCell);
+          const addToChecked = id => (checked[`empire-${empireId}-${neibEmpire}-${id}`] = true);
+          const border = getBorder({fromCell: cellId, toCell: empireToCell, addToChecked, getTypeFn: getEmpire});
+
+          if (border) {
+            empirePath.push(border);
+            cellId--;
+            continue;
+          }
+        }
+      }
+    }
   }
 
   svg.select("#borders").selectAll("path").remove();
   svg.select("#stateBorders").append("path").attr("d", statePath.join(" "));
   svg.select("#provinceBorders").append("path").attr("d", provincePath.join(" "));
+  svg.select("#kingdomBorders").append("path").attr("d", kingdomPath.join(" "));
+  svg.select("#empireBorders").append("path").attr("d", empirePath.join(" "));
 
-  function getBorder({type, fromCell, toCell, addToChecked}) {
-    const getType = cellId => cells[type][cellId];
+  function getBorder({type, fromCell, toCell, addToChecked, getTypeFn}) {
+    const getType = getTypeFn || (cellId => cells[type][cellId]);
     const isTypeFrom = cellId => cellId < cells.i.length && getType(cellId) === getType(fromCell);
     const isTypeTo = cellId => cellId < cells.i.length && getType(cellId) === getType(toCell);
 

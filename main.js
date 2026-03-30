@@ -59,6 +59,8 @@ let rivers = viewbox.append("g").attr("id", "rivers");
 let terrain = viewbox.append("g").attr("id", "terrain");
 let relig = viewbox.append("g").attr("id", "relig");
 let cults = viewbox.append("g").attr("id", "cults");
+let empireRegions = viewbox.append("g").attr("id", "empireRegions");
+let kingdomRegions = viewbox.append("g").attr("id", "kingdomRegions");
 let regions = viewbox.append("g").attr("id", "regions");
 let statesBody = regions.append("g").attr("id", "statesBody");
 let statesHalo = regions.append("g").attr("id", "statesHalo");
@@ -67,6 +69,12 @@ let zones = viewbox.append("g").attr("id", "zones");
 let borders = viewbox.append("g").attr("id", "borders");
 let stateBorders = borders.append("g").attr("id", "stateBorders");
 let provinceBorders = borders.append("g").attr("id", "provinceBorders");
+let kingdomBorders = borders.append("g").attr("id", "kingdomBorders")
+  .attr("opacity", 0.9).attr("stroke", "#2b2b45").attr("stroke-width", 2.5)
+  .attr("stroke-dasharray", "4 2").attr("stroke-linecap", "round").attr("fill", "none");
+let empireBorders = borders.append("g").attr("id", "empireBorders")
+  .attr("opacity", 0.9).attr("stroke", "#1a1a2e").attr("stroke-width", 4)
+  .attr("stroke-linecap", "round").attr("fill", "none");
 let routes = viewbox.append("g").attr("id", "routes");
 let roads = routes.append("g").attr("id", "roads");
 let trails = routes.append("g").attr("id", "trails");
@@ -108,6 +116,8 @@ terrs.append("g").attr("id", "landHeights");
 
 let burgLabels = labels.append("g").attr("id", "burgLabels");
 labels.append("g").attr("id", "states");
+labels.append("g").attr("id", "kingdoms");
+labels.append("g").attr("id", "empires");
 labels.append("g").attr("id", "addedLabels");
 
 burgIcons.append("g").attr("id", "cities");
@@ -658,6 +668,8 @@ async function generate(options) {
     BurgsAndStates.defineStateForms();
     Provinces.generate();
     Provinces.getPoles();
+    Kingdoms.generate();
+    Kingdoms.getPoles();
     BurgsAndStates.defineBurgFeatures();
 
     Rivers.specify();

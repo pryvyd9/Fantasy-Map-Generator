@@ -994,4 +994,42 @@ export function resolveVersionConflicts(mapVersion) {
     // some old maps has incorrect "heights" groups
     viewbox.selectAll("#heights").remove();
   }
+
+  if (isOlderThan("1.109.0")) {
+    // v1.109.0 added Kingdom and Empire domain levels above States
+    pack.kingdoms = [0];
+    pack.empires = [0];
+    pack.states.forEach(s => {
+      if (s.kingdom === undefined) s.kingdom = 0;
+      if (s.empire === undefined) s.empire = 0;
+    });
+
+    // add SVG groups if absent (maps loaded before this version won't have them)
+    if (!document.getElementById("kingdomRegions")) {
+      const regionsEl = document.getElementById("regions");
+      if (regionsEl) viewbox.insert("g", "#regions").attr("id", "kingdomRegions");
+    }
+    if (!document.getElementById("empireRegions")) {
+      const kingdomRegionsEl = document.getElementById("kingdomRegions");
+      if (kingdomRegionsEl) viewbox.insert("g", "#kingdomRegions").attr("id", "empireRegions");
+      else if (document.getElementById("regions")) viewbox.insert("g", "#regions").attr("id", "empireRegions");
+    }
+    if (!document.getElementById("kingdomBorders")) {
+      borders.append("g").attr("id", "kingdomBorders")
+        .attr("opacity", 0.9).attr("stroke", "#2b2b45").attr("stroke-width", 2.5)
+        .attr("stroke-dasharray", "4 2").attr("stroke-linecap", "round").attr("fill", "none");
+    }
+    if (!document.getElementById("empireBorders")) {
+      borders.append("g").attr("id", "empireBorders")
+        .attr("opacity", 0.9).attr("stroke", "#1a1a2e").attr("stroke-width", 4)
+        .attr("stroke-linecap", "round").attr("fill", "none");
+    }
+
+    // add label sub-groups if absent
+    if (!document.getElementById("kingdoms")) labels.append("g").attr("id", "kingdoms");
+    if (!document.getElementById("empires")) labels.append("g").attr("id", "empires");
+
+    Kingdoms.generate();
+    Kingdoms.getPoles();
+  }
 }
