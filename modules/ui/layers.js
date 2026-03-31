@@ -10,6 +10,7 @@ function getDefaultPresets() {
       "toggleBorders",
       "toggleBurgIcons",
       "toggleIce",
+      "toggleCounties",
       "toggleKingdoms",
       "toggleEmpires",
       "toggleLabels",
@@ -199,6 +200,7 @@ function drawLayers() {
   if (layerIsOn("toggleCultures")) drawCultures();
   if (layerIsOn("toggleEmpires")) drawEmpires();
   if (layerIsOn("toggleKingdoms")) drawKingdoms();
+  if (layerIsOn("toggleCounties")) drawCounties();
   if (layerIsOn("toggleStates")) drawStates();
   if (layerIsOn("toggleProvinces")) drawProvinces();
   if (layerIsOn("toggleZones")) drawZones();
@@ -533,6 +535,8 @@ function toggleStates(event) {
     regions.selectAll("path").remove();
     turnButtonOff("toggleStates");
   }
+  if (layerIsOn("toggleBorders")) drawBorders();
+  if (layerIsOn("toggleLabels")) drawLabels();
 }
 
 function drawStates() {
@@ -578,6 +582,43 @@ function toggleBorders(event) {
   }
 }
 
+function toggleCounties(event) {
+  if (!layerIsOn("toggleCounties")) {
+    turnButtonOn("toggleCounties");
+    drawCounties();
+    if (event && isCtrlClick(event)) editStyle("countyRegions");
+  } else {
+    if (event && isCtrlClick(event)) return editStyle("countyRegions");
+    countyRegions.selectAll("*").remove();
+    turnButtonOff("toggleCounties");
+  }
+  if (layerIsOn("toggleLabels")) drawLabels();
+}
+
+function drawCounties() {
+  TIME && console.time("drawCounties");
+  const {provinces, counties} = pack;
+  if (!counties?.length) return;
+
+  const getCountyId = cellId => {
+    const p = pack.cells.province[cellId];
+    return p ? (provinces[p]?.county || 0) : 0;
+  };
+
+  const bodyPaths = new Array(counties.length - 1);
+  const isolines = getIsolines(pack, getCountyId, {fill: true, waterGap: true});
+  Object.entries(isolines).forEach(([index, {fill, waterGap}]) => {
+    const color = counties[index]?.color || "#aaaaaa";
+    let html = "";
+    if (fill) html += /* html */ `<path d="${fill}" fill="${color}" fill-opacity="0.5" id="county${index}" />`;
+    if (waterGap) html += /* html */ `<path d="${waterGap}" fill="none" stroke="${color}" stroke-width="3" id="county-gap${index}" />`;
+    bodyPaths.push(html);
+  });
+
+  byId("countyRegions").innerHTML = bodyPaths.join("");
+  TIME && console.timeEnd("drawCounties");
+}
+
 function toggleKingdoms(event) {
   if (!layerIsOn("toggleKingdoms")) {
     turnButtonOn("toggleKingdoms");
@@ -588,6 +629,8 @@ function toggleKingdoms(event) {
     kingdomRegions.selectAll("*").remove();
     turnButtonOff("toggleKingdoms");
   }
+  if (layerIsOn("toggleBorders")) drawBorders();
+  if (layerIsOn("toggleLabels")) drawLabels();
 }
 
 function drawKingdoms() {
@@ -624,6 +667,8 @@ function toggleEmpires(event) {
     empireRegions.selectAll("*").remove();
     turnButtonOff("toggleEmpires");
   }
+  if (layerIsOn("toggleBorders")) drawBorders();
+  if (layerIsOn("toggleLabels")) drawLabels();
 }
 
 function drawEmpires() {
@@ -642,7 +687,7 @@ function drawEmpires() {
   const isolines = getIsolines(pack, getEmpireId, {fill: true, waterGap: true});
   Object.entries(isolines).forEach(([index, {fill, waterGap}]) => {
     const color = empires[index]?.color || "#aaaaaa";
-    bodyPaths.push(getGappedFillPaths("empire", fill, waterGap, color, index));
+    bodyPaths.push(getGappedFillPaths("empire", fill, waterGap, color, index, 0.5));
   });
 
   byId("empireRegions").innerHTML = bodyPaths.join("");
@@ -959,10 +1004,15 @@ function toggleLabels(event) {
 }
 
 function drawLabels() {
-  drawStateLabels();
+  if (layerIsOn("toggleStates")) drawStateLabels();
+  else d3.select("#labels > #states").selectAll("text").remove();
   drawBurgLabels();
-  drawKingdomLabels();
-  drawEmpireLabels();
+  if (layerIsOn("toggleKingdoms")) drawKingdomLabels();
+  else d3.select("#labels > #kingdoms").selectAll("text").remove();
+  if (layerIsOn("toggleEmpires")) drawEmpireLabels();
+  else d3.select("#labels > #empires").selectAll("text").remove();
+  if (layerIsOn("toggleCounties")) drawCountyLabels();
+  else d3.select("#labels > #counties").selectAll("text").remove();
   invokeActiveZooming();
 }
 
@@ -1056,9 +1106,10 @@ function toggleVignette(event) {
   }
 }
 
-function getGappedFillPaths(elementName, fill, waterGap, color, index) {
+function getGappedFillPaths(elementName, fill, waterGap, color, index, fillOpacity = null) {
   let html = "";
-  if (fill) html += /* html */ `<path d="${fill}" fill="${color}" id="${elementName}${index}" />`;
+  const opacityAttr = fillOpacity !== null ? ` fill-opacity="${fillOpacity}"` : "";
+  if (fill) html += /* html */ `<path d="${fill}" fill="${color}"${opacityAttr} id="${elementName}${index}" />`;
   if (waterGap)
     html += /* html */ `<path d="${waterGap}" fill="none" stroke="${color}" stroke-width="3" id="${elementName}-gap${index}" />`;
   return html;
@@ -1103,6 +1154,7 @@ function getLayer(id) {
   if (id === "toggleCultures") return $("#cults");
   if (id === "toggleEmpires") return $("#empireRegions");
   if (id === "toggleKingdoms") return $("#kingdomRegions");
+  if (id === "toggleCounties") return $("#countyRegions");
   if (id === "toggleStates") return $("#regions");
   if (id === "toggleProvinces") return $("#provs");
   if (id === "toggleBorders") return $("#borders");

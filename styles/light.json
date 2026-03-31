@@ -18,9 +18,9 @@
     "mask": "url(#land)"
   },
   "#stateBorders": {
-    "opacity": 0.8,
+    "opacity": 0.4,
     "stroke": "#4c483e",
-    "stroke-width": 1,
+    "stroke-width": 0.6,
     "stroke-dasharray": 2,
     "stroke-linecap": "square",
     "filter": null
@@ -224,9 +224,9 @@
   },
   "#statesHalo": {
     "opacity": 0.3,
-    "data-width": 25,
-    "stroke-width": 25,
-    "filter": "blur(5px)"
+    "data-width": 12,
+    "stroke-width": 12,
+    "filter": "blur(3px)"
   },
   "#provs": {
     "opacity": 0.4,

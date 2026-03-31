@@ -61,6 +61,7 @@ let relig = viewbox.append("g").attr("id", "relig");
 let cults = viewbox.append("g").attr("id", "cults");
 let empireRegions = viewbox.append("g").attr("id", "empireRegions");
 let kingdomRegions = viewbox.append("g").attr("id", "kingdomRegions");
+let countyRegions = viewbox.append("g").attr("id", "countyRegions");
 let regions = viewbox.append("g").attr("id", "regions");
 let statesBody = regions.append("g").attr("id", "statesBody");
 let statesHalo = regions.append("g").attr("id", "statesHalo");
@@ -69,11 +70,14 @@ let zones = viewbox.append("g").attr("id", "zones");
 let borders = viewbox.append("g").attr("id", "borders");
 let stateBorders = borders.append("g").attr("id", "stateBorders");
 let provinceBorders = borders.append("g").attr("id", "provinceBorders");
+let countyBorders = borders.append("g").attr("id", "countyBorders")
+  .attr("opacity", 0.4).attr("stroke", "#3a3a5c").attr("stroke-width", 0.7)
+  .attr("stroke-dasharray", "3 2").attr("stroke-linecap", "round").attr("fill", "none");
 let kingdomBorders = borders.append("g").attr("id", "kingdomBorders")
-  .attr("opacity", 0.9).attr("stroke", "#2b2b45").attr("stroke-width", 2.5)
+  .attr("opacity", 0.35).attr("stroke", "#2b2b45").attr("stroke-width", 1.0)
   .attr("stroke-dasharray", "4 2").attr("stroke-linecap", "round").attr("fill", "none");
 let empireBorders = borders.append("g").attr("id", "empireBorders")
-  .attr("opacity", 0.9).attr("stroke", "#1a1a2e").attr("stroke-width", 4)
+  .attr("opacity", 0.25).attr("stroke", "#1a1a2e").attr("stroke-width", 1.5)
   .attr("stroke-linecap", "round").attr("fill", "none");
 let routes = viewbox.append("g").attr("id", "routes");
 let roads = routes.append("g").attr("id", "roads");
@@ -118,6 +122,7 @@ let burgLabels = labels.append("g").attr("id", "burgLabels");
 labels.append("g").attr("id", "states");
 labels.append("g").attr("id", "kingdoms");
 labels.append("g").attr("id", "empires");
+labels.append("g").attr("id", "counties");
 labels.append("g").attr("id", "addedLabels");
 
 burgIcons.append("g").attr("id", "cities");
@@ -666,10 +671,12 @@ async function generate(options) {
     Routes.generate();
     Religions.generate();
     BurgsAndStates.defineStateForms();
-    Provinces.generate();
-    Provinces.getPoles();
     Kingdoms.generate();
     Kingdoms.getPoles();
+    Counties.generate();
+    Counties.getPoles();
+    Provinces.generate();
+    Provinces.getPoles();
     BurgsAndStates.defineBurgFeatures();
 
     Rivers.specify();

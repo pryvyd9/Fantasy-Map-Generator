@@ -18,9 +18,9 @@
     "mask": "url(#land)"
   },
   "#stateBorders": {
-    "opacity": 0.4,
+    "opacity": 0.2,
     "stroke": "#ffffff",
-    "stroke-width": 0.67,
+    "stroke-width": 0.4,
     "stroke-dasharray": "",
     "stroke-linecap": "square",
     "filter": "url(#outline)"

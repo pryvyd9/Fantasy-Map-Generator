@@ -429,15 +429,20 @@
             data-shortcut="C" onclick="toggleCultures(event)">
             <u>C</u>ultures
           </li>
-          <li id="toggleStates"
-            data-tip="States: click to toggle, drag to raise or lower the layer. Ctrl + click to edit layer style"
-            data-shortcut="S" onclick="toggleStates(event)">
-            <u>S</u>tates
-          </li>
           <li id="toggleProvinces"
-            data-tip="Provinces: click to toggle, drag to raise or lower the layer. Ctrl + click to edit layer style"
+            data-tip="Baronies: click to toggle, drag to raise or lower the layer. Ctrl + click to edit layer style"
             data-shortcut="P" onclick="toggleProvinces(event)">
-            <u>P</u>rovinces
+            <u>B</u>aronies
+          </li>
+          <li id="toggleCounties"
+            data-tip="Counties: click to toggle, drag to raise or lower the layer. Ctrl + click to edit layer style"
+            onclick="toggleCounties(event)">
+            Counties
+          </li>
+          <li id="toggleStates"
+            data-tip="Duchies: click to toggle, drag to raise or lower the layer. Ctrl + click to edit layer style"
+            data-shortcut="S" onclick="toggleStates(event)">
+            <u>D</u>uchies
           </li>
           <li id="toggleKingdoms"
             data-tip="Kingdoms: click to toggle, drag to raise or lower the layer. Ctrl + click to edit layer style"
@@ -1404,26 +1409,6 @@
             <td></td>
           </tr>
 
-          <tr data-tip="Define how many states and capitals should be generated">
-            <td>
-              <i data-locked="0" id="lock_statesNumber" class="icon-lock-open"></i>
-            </td>
-            <td>States ratio</td>
-            <td colspan="2">
-              <slider-input id="statesNumber" data-stored="statesNumber" min="0" max="100"></slider-input>
-            </td>
-          </tr>
-
-          <tr data-tip="Define percentage of states grouped into kingdoms">
-            <td>
-              <i data-locked="0" id="lock_kingdomsRatio" class="icon-lock-open"></i>
-            </td>
-            <td>Kingdoms ratio</td>
-            <td colspan="2">
-              <slider-input id="kingdomsRatio" data-stored="kingdomsRatio" min="0" max="100"></slider-input>
-            </td>
-          </tr>
-
           <tr data-tip="Define the maximum number of empires to generate">
             <td>
               <i data-locked="0" id="lock_empiresNumber" class="icon-lock-open"></i>
@@ -1434,11 +1419,41 @@
             </td>
           </tr>
 
-          <tr data-tip="Define burgs percentage to form a separate province">
+          <tr data-tip="Define percentage of duchies grouped into kingdoms">
+            <td>
+              <i data-locked="0" id="lock_kingdomsRatio" class="icon-lock-open"></i>
+            </td>
+            <td>Kingdoms ratio</td>
+            <td colspan="2">
+              <slider-input id="kingdomsRatio" data-stored="kingdomsRatio" min="0" max="100"></slider-input>
+            </td>
+          </tr>
+
+          <tr data-tip="Define how many duchies and capitals should be generated">
+            <td>
+              <i data-locked="0" id="lock_statesNumber" class="icon-lock-open"></i>
+            </td>
+            <td>Duchies ratio</td>
+            <td colspan="2">
+              <slider-input id="statesNumber" data-stored="statesNumber" min="0" max="100"></slider-input>
+            </td>
+          </tr>
+
+          <tr data-tip="Define percentage of baronies grouped into counties">
+            <td>
+              <i data-locked="0" id="lock_countiesRatio" class="icon-lock-open"></i>
+            </td>
+            <td>Counties ratio</td>
+            <td colspan="2">
+              <slider-input id="countiesRatio" data-stored="countiesRatio" min="0" max="100"></slider-input>
+            </td>
+          </tr>
+
+          <tr data-tip="Define burgs percentage to form a separate barony">
             <td>
               <i data-locked="0" id="lock_provincesRatio" class="icon-lock-open"></i>
             </td>
-            <td>Provinces ratio</td>
+            <td>Baronies ratio</td>
             <td colspan="2">
               <slider-input id="provincesRatio" data-stored="provincesRatio" min="0" max="100"></slider-input>
             </td>
@@ -6142,6 +6157,7 @@
   <script src="modules/burgs-and-states.js?v=1.106.0"></script>
   <script src="modules/provinces-generator.js?v=1.106.0"></script>
   <script src="modules/kingdoms-generator.js?v=1.109.0"></script>
+  <script src="modules/counties-generator.js?v=1.110.0"></script>
   <script src="modules/routes-generator.js?v=1.106.0"></script>
   <script src="modules/religions-generator.js?v=1.106.0"></script>
   <script src="modules/military-generator.js?v=1.107.0"></script>
@@ -6219,6 +6235,7 @@
   <script defer src="modules/renderers/draw-military.js?v=1.108.5"></script>
   <script defer src="modules/renderers/draw-state-labels.js?v=1.108.1"></script>
   <script defer src="modules/renderers/draw-kingdom-labels.js?v=1.109.0"></script>
+  <script defer src="modules/renderers/draw-county-labels.js?v=1.110.0"></script>
   <script defer src="modules/renderers/draw-burg-labels.js?v=1.108.1"></script>
   <script defer src="modules/renderers/draw-burg-icons.js?v=1.104.0"></script>
   <script defer src="modules/renderers/draw-relief-icons.js?v=1.108.4"></script>

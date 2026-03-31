@@ -104,6 +104,7 @@ function prepareMapData() {
   const zones = JSON.stringify(pack.zones);
   const kingdoms = JSON.stringify(pack.kingdoms || [0]);
   const empires = JSON.stringify(pack.empires || [0]);
+  const counties = JSON.stringify(pack.counties || [0]);
 
   // store name array only if not the same as default
   const defaultNB = Names.getNameBases();
@@ -159,7 +160,8 @@ function prepareMapData() {
     routes,
     zones,
     kingdoms,   // data[39]
-    empires     // data[40]
+    empires,    // data[40]
+    counties    // data[41]
   ].join("\r\n");
   return mapData;
 }

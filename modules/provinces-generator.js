@@ -65,14 +65,16 @@ window.Provinces = (function () {
         const formName = rw(form);
         form[formName] += 10;
         const fullName = name + " " + formName;
-        const color = getMixedColor(s.color);
+        const county = Counties?.getBurgCounty(burg) || 0;
+        const countyColor = pack.counties?.[county]?.color;
+        const color = countyColor ? getMixedColor(countyColor, 0.2, 0.2) : getMixedColor(s.color);
         const kinship = nameByBurg ? 0.8 : 0.4;
         const type = BurgsAndStates.getType(center, burg.port);
         const coa = COA.generate(stateBurgs[i].coa, kinship, null, type);
         coa.shield = COA.getShield(c, s.i);
 
         s.provinces.push(provinceId);
-        provinces.push({i: provinceId, state: s.i, center, burg, name, formName, fullName, color, coa});
+        provinces.push({i: provinceId, state: s.i, center, burg, name, formName, fullName, color, county, coa});
       }
     });
 
@@ -181,7 +183,9 @@ window.Provinces = (function () {
         // generate "wild" province name
         const c = cells.culture[center];
         const f = pack.features[cells.f[center]];
-        const color = getMixedColor(s.color);
+        const wildCounty = Counties?.getBurgCounty(burg) || 0;
+        const wildCountyColor = pack.counties?.[wildCounty]?.color;
+        const color = wildCountyColor ? getMixedColor(wildCountyColor, 0.2, 0.2) : getMixedColor(s.color);
 
         const provCells = stateNoProvince.filter(i => provinceIds[i] === provinceId);
         const singleIsle = provCells.length === f.cells && !provCells.find(i => cells.f[i] !== f.i);
@@ -210,7 +214,7 @@ window.Provinces = (function () {
         const coa = COA.generate(s.coa, kinship, dominion, type);
         coa.shield = COA.getShield(c, s.i);
 
-        provinces.push({i: provinceId, state: s.i, center, burg, name, formName, fullName, color, coa});
+        provinces.push({i: provinceId, state: s.i, center, burg, name, formName, fullName, color, county: wildCounty, coa});
         s.provinces.push(provinceId);
 
         // check if there is a land way within the same state between two cells

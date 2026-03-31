@@ -1289,6 +1289,7 @@ function refreshAllEditors() {
   if (byId("zonesEditorRefresh")?.offsetParent) zonesEditorRefresh.click();
   if (byId("kingdomsEditorRefresh")?.offsetParent) kingdomsEditorRefresh.click();
   if (byId("empiresEditorRefresh")?.offsetParent) empiresEditorRefresh.click();
+  if (byId("countiesEditorRefresh")?.offsetParent) countiesEditorRefresh.click();
   TIME && console.timeEnd("refreshAllEditors");
 }
 
@@ -1302,6 +1303,12 @@ async function editStates() {
 async function editKingdoms() {
   if (customization) return;
   const Editor = await import("../dynamic/editors/kingdoms-editor.js?v=1.109.0");
+  Editor.open();
+}
+
+async function editCounties() {
+  if (customization) return;
+  const Editor = await import("../dynamic/editors/counties-editor.js?v=1.110.0");
   Editor.open();
 }
 

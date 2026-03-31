@@ -117,10 +117,10 @@ function drawBorders() {
   }
 
   svg.select("#borders").selectAll("path").remove();
-  svg.select("#stateBorders").append("path").attr("d", statePath.join(" "));
-  svg.select("#provinceBorders").append("path").attr("d", provincePath.join(" "));
-  svg.select("#kingdomBorders").append("path").attr("d", kingdomPath.join(" "));
-  svg.select("#empireBorders").append("path").attr("d", empirePath.join(" "));
+  if (layerIsOn("toggleStates")) svg.select("#stateBorders").append("path").attr("d", statePath.join(" "));
+  if (layerIsOn("toggleProvinces")) svg.select("#provinceBorders").append("path").attr("d", provincePath.join(" "));
+  if (layerIsOn("toggleKingdoms")) svg.select("#kingdomBorders").append("path").attr("d", kingdomPath.join(" "));
+  if (layerIsOn("toggleEmpires")) svg.select("#empireBorders").append("path").attr("d", empirePath.join(" "));
 
   function getBorder({type, fromCell, toCell, addToChecked, getTypeFn}) {
     const getType = getTypeFn || (cellId => cells[type][cellId]);

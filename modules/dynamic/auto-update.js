@@ -1032,4 +1032,25 @@ export function resolveVersionConflicts(mapVersion) {
     Kingdoms.generate();
     Kingdoms.getPoles();
   }
+
+  if (isOlderThan("1.110.0")) {
+    // v1.110.0 added County domain level between Barony (Province) and Duchy (State)
+    pack.counties = [0];
+    if (pack.provinces) pack.provinces.forEach(p => { if (p?.county === undefined) p.county = 0; });
+
+    // add SVG groups if absent
+    if (!document.getElementById("countyRegions")) {
+      const regionsEl = document.getElementById("regions");
+      if (regionsEl) viewbox.insert("g", "#regions").attr("id", "countyRegions");
+    }
+    if (!document.getElementById("countyBorders")) {
+      borders.append("g").attr("id", "countyBorders")
+        .attr("opacity", 0.9).attr("stroke", "#3a3a5c").attr("stroke-width", 1.5)
+        .attr("stroke-dasharray", "3 2").attr("stroke-linecap", "round").attr("fill", "none");
+    }
+    if (!document.getElementById("counties")) labels.append("g").attr("id", "counties");
+
+    Counties.generate();
+    Counties.getPoles();
+  }
 }
