@@ -223,9 +223,9 @@
     "filter": null
   },
   "#statesHalo": {
-    "opacity": 0.4,
-    "data-width": 5,
-    "stroke-width": 5,
+    "opacity": 0.2,
+    "data-width": 2,
+    "stroke-width": 2,
     "filter": "blur(2.5px)"
   },
   "#provs": {
@@ -442,5 +442,41 @@
     "data-right": 15,
     "data-bottom": 15,
     "data-left": 10
+  },
+  "#labels > #kingdoms": {
+    "opacity": 0.5,
+    "fill": "#000000",
+    "stroke": "#000000",
+    "stroke-width": 0,
+    "text-shadow": "white 0px 0px 4px",
+    "letter-spacing": 0,
+    "data-size": 27,
+    "font-size": 27,
+    "font-family": "Amarante",
+    "filter": null
+  },
+  "#labels > #empires": {
+    "opacity": 0.5,
+    "fill": "#000000",
+    "stroke": "#000000",
+    "stroke-width": 0,
+    "text-shadow": "white 0px 0px 4px",
+    "letter-spacing": 0,
+    "data-size": 34,
+    "font-size": 34,
+    "font-family": "Amarante",
+    "filter": null
+  },
+  "#labels > #counties": {
+    "opacity": 0.5,
+    "fill": "#000000",
+    "stroke": "#000000",
+    "stroke-width": 0,
+    "text-shadow": "white 0px 0px 4px",
+    "letter-spacing": 0,
+    "data-size": 16,
+    "font-size": 16,
+    "font-family": "Amarante",
+    "filter": null
   }
 }

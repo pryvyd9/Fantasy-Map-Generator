@@ -444,5 +444,41 @@
     "data-right": 15,
     "data-bottom": 15,
     "data-left": 10
+  },
+  "#labels > #kingdoms": {
+    "opacity": 1,
+    "fill": "#292929",
+    "stroke": "#303030",
+    "stroke-width": 0,
+    "text-shadow": "white 0 0 2px",
+    "letter-spacing": 0,
+    "data-size": 13,
+    "font-size": 13,
+    "font-family": "Arial",
+    "filter": null
+  },
+  "#labels > #empires": {
+    "opacity": 1,
+    "fill": "#292929",
+    "stroke": "#303030",
+    "stroke-width": 0,
+    "text-shadow": "white 0 0 2px",
+    "letter-spacing": 0,
+    "data-size": 16,
+    "font-size": 16,
+    "font-family": "Arial",
+    "filter": null
+  },
+  "#labels > #counties": {
+    "opacity": 1,
+    "fill": "#292929",
+    "stroke": "#303030",
+    "stroke-width": 0,
+    "text-shadow": "white 0 0 2px",
+    "letter-spacing": 0,
+    "data-size": 8,
+    "font-size": 8,
+    "font-family": "Arial",
+    "filter": null
   }
 }

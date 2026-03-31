@@ -1,0 +1,1 @@
+Don't provide your thinking process. That wastes tokens which I don't have a lot.

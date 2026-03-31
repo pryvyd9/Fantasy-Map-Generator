@@ -429,5 +429,41 @@
     "data-right": 15,
     "data-bottom": 15,
     "data-left": 10
+  },
+  "#labels > #kingdoms": {
+    "opacity": 1,
+    "fill": "#000000",
+    "stroke": "#000000",
+    "stroke-width": 0,
+    "text-shadow": "white 0px 0px 4px",
+    "letter-spacing": 0,
+    "data-size": 27,
+    "font-size": 27,
+    "font-family": "Eagle Lake",
+    "filter": null
+  },
+  "#labels > #empires": {
+    "opacity": 1,
+    "fill": "#000000",
+    "stroke": "#000000",
+    "stroke-width": 0,
+    "text-shadow": "white 0px 0px 4px",
+    "letter-spacing": 0,
+    "data-size": 34,
+    "font-size": 34,
+    "font-family": "Eagle Lake",
+    "filter": null
+  },
+  "#labels > #counties": {
+    "opacity": 1,
+    "fill": "#000000",
+    "stroke": "#000000",
+    "stroke-width": 0,
+    "text-shadow": "white 0px 0px 4px",
+    "letter-spacing": 0,
+    "data-size": 16,
+    "font-size": 16,
+    "font-family": "Eagle Lake",
+    "filter": null
   }
 }

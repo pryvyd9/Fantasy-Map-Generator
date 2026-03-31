@@ -335,6 +335,42 @@ function addStylePreset() {
         "font-family",
         "filter"
       ],
+      "#labels > #kingdoms": [
+        "opacity",
+        "fill",
+        "stroke",
+        "stroke-width",
+        "text-shadow",
+        "letter-spacing",
+        "data-size",
+        "font-size",
+        "font-family",
+        "filter"
+      ],
+      "#labels > #empires": [
+        "opacity",
+        "fill",
+        "stroke",
+        "stroke-width",
+        "text-shadow",
+        "letter-spacing",
+        "data-size",
+        "font-size",
+        "font-family",
+        "filter"
+      ],
+      "#labels > #counties": [
+        "opacity",
+        "fill",
+        "stroke",
+        "stroke-width",
+        "text-shadow",
+        "letter-spacing",
+        "data-size",
+        "font-size",
+        "font-family",
+        "filter"
+      ],
       "#fogging": ["opacity", "fill", "filter"],
       "#vignette": ["opacity", "fill", "filter"],
       "#vignette-rect": ["x", "y", "width", "height", "rx", "ry", "filter"],

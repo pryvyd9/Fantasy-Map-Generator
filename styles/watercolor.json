@@ -223,9 +223,9 @@
     "filter": null
   },
   "#statesHalo": {
-    "opacity": 0.4,
-    "data-width": 4,
-    "stroke-width": 4,
+    "opacity": 0.2,
+    "data-width": 1.6,
+    "stroke-width": 1.6,
     "filter": "blur(1px)"
   },
   "#provs": {
@@ -442,5 +442,41 @@
     "data-right": 15,
     "data-bottom": 15,
     "data-left": 10
+  },
+  "#labels > #kingdoms": {
+    "opacity": 1,
+    "fill": "#ffffff",
+    "stroke": "#000000",
+    "stroke-width": 0.15,
+    "text-shadow": "black 1px 1px 3px",
+    "letter-spacing": 0,
+    "data-size": 23,
+    "font-size": 23,
+    "font-family": "Gloria Hallelujah",
+    "filter": null
+  },
+  "#labels > #empires": {
+    "opacity": 1,
+    "fill": "#ffffff",
+    "stroke": "#000000",
+    "stroke-width": 0.15,
+    "text-shadow": "black 1px 1px 3px",
+    "letter-spacing": 0,
+    "data-size": 29,
+    "font-size": 29,
+    "font-family": "Gloria Hallelujah",
+    "filter": null
+  },
+  "#labels > #counties": {
+    "opacity": 1,
+    "fill": "#ffffff",
+    "stroke": "#000000",
+    "stroke-width": 0.15,
+    "text-shadow": "black 1px 1px 3px",
+    "letter-spacing": 0,
+    "data-size": 14,
+    "font-size": 14,
+    "font-family": "Gloria Hallelujah",
+    "filter": null
   }
 }
