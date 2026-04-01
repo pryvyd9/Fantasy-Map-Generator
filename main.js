@@ -674,8 +674,8 @@ async function generate(options) {
     Kingdoms.generate();
     Kingdoms.getPoles();
     Counties.generate();
-    Counties.getPoles();
     Provinces.generate();
+    Counties.getPoles();
     Provinces.getPoles();
     BurgsAndStates.defineBurgFeatures();
 

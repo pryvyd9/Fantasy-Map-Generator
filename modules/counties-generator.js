@@ -79,19 +79,33 @@ window.Counties = (function () {
   const getBurgCounty = burgId => burgToCounty[burgId] || 0;
 
   const getPoles = () => {
-    const {counties, burgs, cells} = pack;
+    const {counties, provinces, burgs, cells} = pack;
     if (!counties) return;
 
-    counties.forEach(c => {
-      if (!c.i || c.removed) return;
-      const positions = (c.burgs || [])
-        .map(bid => burgs[bid])
-        .filter(b => b?.cell != null)
-        .map(b => cells.p[b.cell]);
-      c.pole = positions.length
-        ? [d3.mean(positions, p => p[0]), d3.mean(positions, p => p[1])]
-        : cells.p[burgs[c.capital]?.cell] || [0, 0];
-    });
+    // Use actual rendered territory (via province→county mapping) when available
+    if (provinces && cells.province) {
+      const getType = cellId => {
+        const p = cells.province[cellId];
+        return p ? (provinces[p]?.county || 0) : 0;
+      };
+      const poles = getPolesOfInaccessibility(pack, getType);
+      counties.forEach(c => {
+        if (!c.i || c.removed) return;
+        c.pole = poles[c.i] || cells.p[burgs[c.capital]?.cell] || [0, 0];
+      });
+    } else {
+      // fallback before provinces are generated
+      counties.forEach(c => {
+        if (!c.i || c.removed) return;
+        const positions = (c.burgs || [])
+          .map(bid => burgs[bid])
+          .filter(b => b?.cell != null)
+          .map(b => cells.p[b.cell]);
+        c.pole = positions.length
+          ? [d3.mean(positions, p => p[0]), d3.mean(positions, p => p[1])]
+          : cells.p[burgs[c.capital]?.cell] || [0, 0];
+      });
+    }
   };
 
   return {generate, getPoles, getBurgCounty};

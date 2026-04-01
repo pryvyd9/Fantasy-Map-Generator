@@ -53,15 +53,48 @@ window.Provinces = (function () {
       if (stateBurgs.length < 2) return; // at least 2 provinces are required
       const provincesNumber = Math.max(Math.ceil((stateBurgs.length * provincesRatio) / 100), 2);
 
+      // Compute minimum spacing from state area for even distribution
+      const stateArea = cells.i.reduce((sum, i) => (cells.state[i] === s.i ? sum + cells.area[i] : sum), 0) || 1;
+      const minSpacing = Math.sqrt(stateArea / provincesNumber) * 0.6;
+
+      const seeds = []; // {cell, burgId, culture, burgObj}
+      const seedTree = d3.quadtree();
+
+      // Pass 1: accept burgs that pass spacing test (capital always included first)
+      for (const b of stateBurgs) {
+        if (seeds.length >= provincesNumber) break;
+        const [x, y] = cells.p[b.cell];
+        if (b.capital || seedTree.find(x, y, minSpacing) === undefined) {
+          seeds.push({cell: b.cell, burgId: b.i, culture: b.culture, burgObj: b});
+          seedTree.add([x, y]);
+        }
+      }
+
+      // Pass 2: fill remaining slots with burgless seeds at best-suitability gap cells
+      if (seeds.length < provincesNumber) {
+        const stateCells = cells.i
+          .filter(i => cells.state[i] === s.i && cells.h[i] >= 20 && !provinceIds[i])
+          .sort((a, b) => cells.s[b] - cells.s[a]);
+        for (const i of stateCells) {
+          if (seeds.length >= provincesNumber) break;
+          const [x, y] = cells.p[i];
+          if (seedTree.find(x, y, minSpacing) === undefined) {
+            seeds.push({cell: i, burgId: cells.burg[i] || 0, culture: cells.culture[i], burgObj: null});
+            seedTree.add([x, y]);
+          }
+        }
+      }
+
       const form = Object.assign({}, forms[s.form]);
 
-      for (let i = 0; i < provincesNumber; i++) {
+      for (let i = 0; i < seeds.length; i++) {
         const provinceId = provinces.length;
-        const center = stateBurgs[i].cell;
-        const burg = stateBurgs[i].i;
-        const c = stateBurgs[i].culture;
-        const nameByBurg = P(0.5);
-        const name = nameByBurg ? stateBurgs[i].name : Names.getState(Names.getCultureShort(c), c);
+        const seed = seeds[i];
+        const center = seed.cell;
+        const burg = seed.burgId;
+        const c = seed.culture;
+        const nameByBurg = seed.burgObj && P(0.5);
+        const name = nameByBurg ? seed.burgObj.name : Names.getState(Names.getCultureShort(c), c);
         const formName = rw(form);
         form[formName] += 10;
         const fullName = name + " " + formName;
@@ -69,8 +102,8 @@ window.Provinces = (function () {
         const countyColor = pack.counties?.[county]?.color;
         const color = countyColor ? getMixedColor(countyColor, 0.2, 0.2) : getMixedColor(s.color);
         const kinship = nameByBurg ? 0.8 : 0.4;
-        const type = BurgsAndStates.getType(center, burg.port);
-        const coa = COA.generate(stateBurgs[i].coa, kinship, null, type);
+        const type = BurgsAndStates.getType(center, seed.burgObj?.port);
+        const coa = COA.generate(seed.burgObj?.coa || s.coa, kinship, null, type);
         coa.shield = COA.getShield(c, s.i);
 
         s.provinces.push(provinceId);
@@ -78,12 +111,72 @@ window.Provinces = (function () {
       }
     });
 
-    // expand generated provinces
+    // generate provinces for neutral land cells (state === 0) with spatial spacing
+    const neutralProvinceIds = [];
+    let neutralTargetCells = 10;
+    {
+      const neutralCells = cells.i.filter(i => !cells.state[i] && cells.h[i] >= 20 && !provinceIds[i]);
+      if (neutralCells.length) {
+        const neutralArea = neutralCells.reduce((sum, i) => sum + cells.area[i], 0);
+        const totalLandArea = cells.i.reduce((sum, i) => (cells.h[i] >= 20 ? sum + cells.area[i] : sum), 0) || 1;
+        const totalStateProvinces = provinces.length - 1; // exclude index 0
+        const areaPerProvince = totalStateProvinces > 0 ? totalLandArea / totalStateProvinces : neutralArea;
+        const neutralCount = Math.max(Math.ceil(neutralArea / areaPerProvince), 1);
+        const neutralSpacing = Math.sqrt(neutralArea / neutralCount) * 0.6;
+        neutralTargetCells = Math.ceil(neutralCells.length / neutralCount);
+
+        const neutralTree = d3.quadtree();
+        const neutralSeeds = [];
+        const sortedNeutral = neutralCells.slice().sort((a, b) => cells.s[b] - cells.s[a]);
+
+        for (const i of sortedNeutral) {
+          if (neutralSeeds.length >= neutralCount) break;
+          const [x, y] = cells.p[i];
+          if (neutralTree.find(x, y, neutralSpacing) === undefined) {
+            neutralSeeds.push(i);
+            neutralTree.add([x, y]);
+          }
+        }
+
+        // find nearest state to a cell center (for form name)
+        const validStates = pack.states.filter(s => s.i && !s.removed);
+        const getNearestState = center => {
+          const [cx, cy] = cells.p[center];
+          let best = null, bestDist = Infinity;
+          for (const s of validStates) {
+            const [sx, sy] = cells.p[s.center];
+            const d = (cx - sx) ** 2 + (cy - sy) ** 2;
+            if (d < bestDist) { bestDist = d; best = s; }
+          }
+          return best;
+        };
+
+        for (const center of neutralSeeds) {
+          const provinceId = provinces.length;
+          const burg = cells.burg[center] || 0;
+          const c = cells.culture[center];
+          const nearestState = getNearestState(center);
+          const formTable = nearestState ? forms[nearestState.form] || forms.Monarchy : forms.Monarchy;
+          const name = burg ? burgs[burg].name : Names.getState(Names.getCultureShort(c), c);
+          const formName = rw(Object.assign({}, formTable));
+          const fullName = name + " " + formName;
+          const color = getMixedColor(null, 0.2, 0.2);
+          const type = BurgsAndStates.getType(center, burgs[burg]?.port);
+          const coa = COA.generate(null, 0, false, type);
+          coa.shield = COA.getShield(c, 0);
+          provinces.push({i: provinceId, state: 0, center, burg, name, formName, fullName, color, county: 0, coa});
+          neutralProvinceIds.push(provinceId);
+        }
+      }
+    }
+
+    // expand generated provinces (state-owned only; neutral provinces use separate pass below)
     const queue = new FlatQueue();
     const cost = [];
 
     provinces.forEach(p => {
       if (!p.i || p.removed || isProvinceLocked(p)) return;
+      if (p.state === 0) return; // neutral provinces expand in a separate pass
       provinceIds[p.center] = p.i;
       queue.push({e: p.center, province: p.i, state: p.state, p: 0}, 0);
       cost[p.center] = 1;
@@ -183,7 +276,24 @@ window.Provinces = (function () {
         // generate "wild" province name
         const c = cells.culture[center];
         const f = pack.features[cells.f[center]];
-        const wildCounty = Counties?.getBurgCounty(burg) || 0;
+        let wildCounty = Counties?.getBurgCounty(burg) || 0;
+        if (!wildCounty && pack.counties?.length > 1) {
+          // no burg county — find most-adjacent county from neighboring assigned cells
+          const adjCounts = new Map();
+          const provCellsForCounty = stateNoProvince.filter(i => provinceIds[i] === provinceId);
+          for (const ci of provCellsForCounty) {
+            for (const nb of cells.c[ci]) {
+              const nbPid = provinceIds[nb];
+              if (!nbPid) continue;
+              const nbCounty = provinces[nbPid]?.county;
+              if (!nbCounty) continue;
+              adjCounts.set(nbCounty, (adjCounts.get(nbCounty) || 0) + 1);
+            }
+          }
+          if (adjCounts.size) {
+            wildCounty = [...adjCounts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+          }
+        }
         const wildCountyColor = pack.counties?.[wildCounty]?.color;
         const color = wildCountyColor ? getMixedColor(wildCountyColor, 0.2, 0.2) : getMixedColor(s.color);
 
@@ -239,6 +349,97 @@ window.Provinces = (function () {
         stateNoProvince = noProvince.filter(i => cells.state[i] === s.i && !provinceIds[i]);
       }
     });
+
+    // expand neutral provinces with a per-province cell-count cap for consistent sizing
+    if (neutralProvinceIds.length) {
+      const neutralQueue = new FlatQueue();
+      const neutralCost = [];
+      const neutralCellCounts = new Array(provinces.length).fill(0);
+
+      for (const id of neutralProvinceIds) {
+        const p = provinces[id];
+        provinceIds[p.center] = id;
+        neutralCellCounts[id] = 1;
+        neutralQueue.push({e: p.center, province: id, p: 0}, 0);
+        neutralCost[p.center] = 1;
+      }
+
+      while (neutralQueue.length) {
+        const {e, p, province} = neutralQueue.pop();
+        if (neutralCellCounts[province] >= neutralTargetCells) continue;
+
+        cells.c[e].forEach(nextCell => {
+          if (provinceIds[nextCell]) return;
+          if (cells.h[nextCell] < 20) return;
+          if (cells.state[nextCell]) return;
+          const elevation = cells.h[nextCell] >= 70 ? 100 : cells.h[nextCell] >= 50 ? 30 : 10;
+          const totalCost = p + elevation;
+          if (!neutralCost[nextCell] || totalCost < neutralCost[nextCell]) {
+            provinceIds[nextCell] = province;
+            neutralCellCounts[province]++;
+            neutralCost[nextCell] = totalCost;
+            neutralQueue.push({e: nextCell, province, p: totalCost}, totalCost);
+          }
+        });
+      }
+
+      // assign each neutral province to its most-neighboring county (by cell adjacency)
+      if (pack.counties?.length > 1) {
+        const neutralSet = new Set(neutralProvinceIds);
+        const countyCounts = new Map(neutralProvinceIds.map(id => [id, new Map()]));
+
+        for (const i of cells.i) {
+          const pid = provinceIds[i];
+          if (!pid || !neutralSet.has(pid)) continue;
+          for (const neighbor of cells.c[i]) {
+            const npid = provinceIds[neighbor];
+            if (!npid || neutralSet.has(npid)) continue;
+            const neighborCounty = provinces[npid]?.county;
+            if (!neighborCounty) continue;
+            const m = countyCounts.get(pid);
+            m.set(neighborCounty, (m.get(neighborCounty) || 0) + 1);
+          }
+        }
+
+        for (const id of neutralProvinceIds) {
+          const prov = provinces[id];
+          const m = countyCounts.get(id);
+          if (!m?.size) continue;
+          let bestCounty = 0, bestCount = 0;
+          for (const [countyId, count] of m) {
+            if (count > bestCount) { bestCount = count; bestCounty = countyId; }
+          }
+          prov.county = bestCounty;
+          const countyColor = pack.counties[bestCounty]?.color;
+          if (countyColor) prov.color = getMixedColor(countyColor, 0.2, 0.2);
+        }
+      }
+    }
+
+    // Propagate county assignments: BFS from provinces with county>0 to fill county=0 provinces
+    if (pack.counties?.length > 1) {
+      let changed = true;
+      while (changed) {
+        changed = false;
+        for (const i of cells.i) {
+          const pid = provinceIds[i];
+          if (!pid) continue;
+          const prov = provinces[pid];
+          if (!prov || prov.county) continue;
+          for (const nb of cells.c[i]) {
+            const npid = provinceIds[nb];
+            if (!npid || npid === pid) continue;
+            const nbCounty = provinces[npid]?.county;
+            if (!nbCounty) continue;
+            prov.county = nbCounty;
+            const countyColor = pack.counties[nbCounty]?.color;
+            if (countyColor) prov.color = getMixedColor(countyColor, 0.2, 0.2);
+            changed = true;
+            break;
+          }
+        }
+      }
+    }
 
     cells.province = provinceIds;
     pack.provinces = provinces;
