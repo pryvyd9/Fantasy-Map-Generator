@@ -1045,7 +1045,7 @@ export function resolveVersionConflicts(mapVersion) {
     }
     if (!document.getElementById("countyBorders")) {
       borders.append("g").attr("id", "countyBorders")
-        .attr("opacity", 0.9).attr("stroke", "#3a3a5c").attr("stroke-width", 1.5)
+        .attr("opacity", 0.4).attr("stroke", "#3a3a5c").attr("stroke-width", 0.3)
         .attr("stroke-dasharray", "3 2").attr("stroke-linecap", "round").attr("fill", "none");
     }
     if (!document.getElementById("counties")) labels.append("g").attr("id", "counties");

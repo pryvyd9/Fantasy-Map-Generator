@@ -20,7 +20,7 @@
   "#stateBorders": {
     "opacity": 0.4,
     "stroke": "#56566d",
-    "stroke-width": 0.6,
+    "stroke-width": 0.4,
     "stroke-dasharray": 2,
     "stroke-linecap": "butt",
     "filter": null

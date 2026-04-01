@@ -6,12 +6,17 @@ function drawBorders() {
 
   const statePath = [];
   const provincePath = [];
+  const countyPath = [];
   const kingdomPath = [];
   const empirePath = [];
   const checked = {};
 
   const isLand = cellId => cells.h[cellId] >= 20;
 
+  const getCounty = cellId => {
+    const p = cells.province[cellId];
+    return p ? (pack.provinces[p]?.county || 0) : 0;
+  };
   const getKingdom = cellId => {
     const s = cells.state[cellId];
     return s ? (pack.states[s]?.kingdom || 0) : 0;
@@ -47,6 +52,38 @@ function drawBorders() {
         if (border) {
           provincePath.push(border);
           cellId--; // check the same cell again
+          continue;
+        }
+      }
+    }
+
+    // if cell is on county border
+    const countyId = getCounty(cellId);
+    if (countyId) {
+      const countyToCell = cells.c[cellId].find(neibId => {
+        const neibCounty = getCounty(neibId);
+        return (
+          neibCounty &&
+          countyId > neibCounty &&
+          !checked[`county-${countyId}-${neibCounty}-${cellId}`] &&
+          cells.state[neibId] === stateId
+        );
+      });
+
+      if (countyToCell !== undefined) {
+        const neibCounty = getCounty(countyToCell);
+        const addToChecked = id => (checked[`county-${countyId}-${neibCounty}-${id}`] = true);
+        // Treat cells outside the current state or without a county as the "neibCounty" side so
+        // the border trace extends to the state boundary rather than stopping short of it.
+        const getCountyBounded = cell => {
+          const c = getCounty(cell);
+          return c !== 0 && cells.state[cell] === stateId ? c : neibCounty;
+        };
+        const border = getBorder({fromCell: cellId, toCell: countyToCell, addToChecked, getTypeFn: getCountyBounded});
+
+        if (border) {
+          countyPath.push(border);
+          cellId--;
           continue;
         }
       }
@@ -119,6 +156,7 @@ function drawBorders() {
   svg.select("#borders").selectAll("path").remove();
   if (layerIsOn("toggleStates")) svg.select("#stateBorders").append("path").attr("d", statePath.join(" "));
   if (layerIsOn("toggleProvinces")) svg.select("#provinceBorders").append("path").attr("d", provincePath.join(" "));
+  if (layerIsOn("toggleCounties")) svg.select("#countyBorders").append("path").attr("d", countyPath.join(" "));
   if (layerIsOn("toggleKingdoms")) svg.select("#kingdomBorders").append("path").attr("d", kingdomPath.join(" "));
   if (layerIsOn("toggleEmpires")) svg.select("#empireBorders").append("path").attr("d", empirePath.join(" "));
 

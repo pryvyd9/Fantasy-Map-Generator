@@ -71,7 +71,7 @@ let borders = viewbox.append("g").attr("id", "borders");
 let stateBorders = borders.append("g").attr("id", "stateBorders");
 let provinceBorders = borders.append("g").attr("id", "provinceBorders");
 let countyBorders = borders.append("g").attr("id", "countyBorders")
-  .attr("opacity", 0.4).attr("stroke", "#3a3a5c").attr("stroke-width", 0.7)
+  .attr("opacity", 0.4).attr("stroke", "#3a3a5c").attr("stroke-width", 0.3)
   .attr("stroke-dasharray", "3 2").attr("stroke-linecap", "round").attr("fill", "none");
 let kingdomBorders = borders.append("g").attr("id", "kingdomBorders")
   .attr("opacity", 0.35).attr("stroke", "#2b2b45").attr("stroke-width", 1.0)
