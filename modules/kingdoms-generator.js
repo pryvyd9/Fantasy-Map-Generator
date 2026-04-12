@@ -41,8 +41,12 @@ window.Kingdoms = (function () {
       return;
     }
 
-    const kingdomsRatio = +(byId("kingdomsRatio")?.value ?? 80);
-    const empiresNumberTarget = +(byId("empiresNumber")?.value ?? 3);
+    const kingdomsRatioRaw = +(byId("kingdomsRatio")?.value ?? 50);
+    const kingdomsRatio = Math.max(0, Math.round(kingdomsRatioRaw / 25)); // 1-100 → 0-4 absorb count
+
+    const empiresRatioRaw = +(byId("empiresNumber")?.value ?? 50);
+    const validKingdomsCount = validStates.length; // upper bound; actual kingdoms determined later
+    const empiresNumberTarget = Math.max(1, Math.round(empiresRatioRaw * Math.max(validKingdomsCount / 2, 1) / 100));
 
     const areas = validStates.map(s => s.area);
     const median = d3.median(areas);
@@ -76,7 +80,7 @@ window.Kingdoms = (function () {
     }
 
     // ── Step 2: All remaining states get kingdoms ─────────────────────────
-    const maxNeighborsToAbsorb = Math.round(kingdomsRatio / 25); // 0–4
+    const maxNeighborsToAbsorb = kingdomsRatio; // 0–4
     const needsKingdom = s => s.i && !s.removed && !s.kingdom;
     const byTierDesc = (a, b) => getStateTier(b) - getStateTier(a);
 
@@ -95,6 +99,26 @@ window.Kingdoms = (function () {
       const formName = ra(kingdomForms[getDominantForm(memberIds)] || kingdomForms.Monarchy);
       kingdoms.push({i: kingdomId, name: s.name, fullName: buildFullName(s.name, formName, adjFormNames), formName, color: s.color, capital: s.i, states: memberIds});
       memberIds.forEach(id => { if (states[id]) states[id].kingdom = kingdomId; });
+    }
+
+    // ── Step 2b: Ensure each kingdom has at least 2 states ───────────────
+    for (const k of kingdoms.filter(k => k.i && k.states.length < 2)) {
+      const adjacentKingdomIds = new Set();
+      for (const sId of k.states) {
+        for (const nId of (states[sId]?.neighbors || [])) {
+          const ns = states[nId];
+          if (ns?.kingdom && ns.kingdom !== k.i) adjacentKingdomIds.add(ns.kingdom);
+        }
+      }
+      if (!adjacentKingdomIds.size) continue; // island — can't merge, leave as-is
+      const target = [...adjacentKingdomIds]
+        .map(id => kingdoms[id])
+        .filter(tk => tk && !tk.removed)
+        .sort((a, b) => a.states.length - b.states.length)[0];
+      if (!target) continue;
+      target.states.push(...k.states);
+      k.states.forEach(sId => { if (states[sId]) states[sId].kingdom = target.i; });
+      k.removed = true;
     }
 
     pack.kingdoms = kingdoms;
@@ -137,6 +161,32 @@ window.Kingdoms = (function () {
         k.empire = biggest.i;
         biggest.kingdoms.push(k.i);
         k.states.forEach(sId => { if (states[sId]) states[sId].empire = biggest.i; });
+      }
+
+      // ── Ensure each empire has at least 2 kingdoms ──────────────────────
+      for (const e of empires.filter(e => e.i && e.kingdoms.length < 2)) {
+        const neighborEmpireIds = new Set();
+        for (const kId of e.kingdoms) {
+          for (const nkId of (kingdomNeighbors.get(kId) || [])) {
+            const nk = kingdoms[nkId];
+            if (nk?.empire && nk.empire !== e.i) neighborEmpireIds.add(nk.empire);
+          }
+        }
+        const donor = [...neighborEmpireIds]
+          .map(id => empires[id])
+          .filter(d => d && d.kingdoms.length >= 3)
+          .sort((a, b) => b.kingdoms.length - a.kingdoms.length)[0];
+        if (!donor) continue;
+
+        const transferKId = donor.kingdoms.find(kId =>
+          [...(kingdomNeighbors.get(kId) || [])].some(nkId => kingdoms[nkId]?.empire === e.i)
+        );
+        if (transferKId == null) continue;
+
+        donor.kingdoms.splice(donor.kingdoms.indexOf(transferKId), 1);
+        e.kingdoms.push(transferKId);
+        kingdoms[transferKId].empire = e.i;
+        kingdoms[transferKId].states.forEach(sId => { if (states[sId]) states[sId].empire = e.i; });
       }
     }
 

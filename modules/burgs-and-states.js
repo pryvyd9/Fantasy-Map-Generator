@@ -25,12 +25,16 @@ window.BurgsAndStates = (() => {
 
     function placeCapitals() {
       TIME && console.time("placeCapitals");
-      let count = +byId("statesNumber").value;
+      const statesRatio = +(byId("statesNumber")?.value ?? 50); // 1-100 ratio
       let burgs = [0];
 
       const rand = () => 0.5 + Math.random() * 0.5;
       const score = new Int16Array(cells.s.map(s => s * rand())); // cell score for capitals placement
       const sorted = cells.i.filter(i => score[i] > 0 && cells.culture[i]).sort((a, b) => score[b] - score[a]); // filtered and sorted array of indexes
+
+      // Convert 1-100 ratio to state count: scale based on available populated cells
+      const maxStates = Math.floor(sorted.length / 10);
+      let count = Math.max(1, Math.round(maxStates * statesRatio / 100));
 
       if (sorted.length < count * 10) {
         count = Math.floor(sorted.length / 10);

@@ -392,8 +392,8 @@ function changeEmblemShape(emblemShape) {
 
 function changeStatesNumber(value) {
   byId("statesNumber").style.color = +value ? null : "#b12117";
-  burgLabels.select("#capitals").attr("data-size", Math.max(rn(6 - value / 20), 3));
-  labels.select("#countries").attr("data-size", Math.max(rn(18 - value / 6), 4));
+  burgLabels.select("#capitals").attr("data-size", Math.max(rn(6 - value / 60), 3));
+  labels.select("#countries").attr("data-size", Math.max(rn(18 - value / 18), 4));
 }
 
 function changeUiSize(value) {
@@ -560,6 +560,26 @@ function applyStoredOptions() {
   if (stored("temperatureSouthPole")) options.temperatureSouthPole = +stored("temperatureSouthPole");
   if (stored("military")) options.military = JSON.parse(stored("military"));
 
+  // migrate old-scale ratio values to new 1-100 range
+  if (stored("kingdomsRatio") && +stored("kingdomsRatio") <= 4) {
+    const migrated = Math.round(+stored("kingdomsRatio") * 25);
+    localStorage.setItem("kingdomsRatio", migrated);
+    const el = byId("kingdomsRatio");
+    if (el) el.value = migrated;
+  }
+  if (stored("statesNumber") && +stored("statesNumber") <= 30) {
+    const migrated = Math.max(1, Math.round(+stored("statesNumber") * 100 / 30));
+    localStorage.setItem("statesNumber", migrated);
+    const el = byId("statesNumber");
+    if (el) el.value = migrated;
+  }
+  if (stored("empiresNumber") && +stored("empiresNumber") <= 20) {
+    const migrated = Math.max(1, Math.round(+stored("empiresNumber") * 100 / 20));
+    localStorage.setItem("empiresNumber", migrated);
+    const el = byId("empiresNumber");
+    if (el) el.value = migrated;
+  }
+
   if (stored("tooltipSize")) changeTooltipSize(stored("tooltipSize"));
   if (stored("regions")) changeStatesNumber(stored("regions"));
 
@@ -589,7 +609,7 @@ function randomizeOptions() {
   // 'Options' settings
   if (randomize || !locked("points")) changeCellsDensity(4); // reset to default, no need to randomize
   if (randomize || !locked("template")) randomizeHeightmapTemplate();
-  if (randomize || !locked("statesNumber")) statesNumber.value = gauss(18, 5, 2, 30);
+  if (randomize || !locked("statesNumber")) statesNumber.value = gauss(50, 15, 1, 100);
   if (randomize || !locked("provincesRatio")) provincesRatio.value = gauss(20, 10, 20, 100);
   if (randomize || !locked("manors")) {
     manorsInput.value = 1000;

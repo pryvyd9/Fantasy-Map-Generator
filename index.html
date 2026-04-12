@@ -1409,53 +1409,53 @@
             <td></td>
           </tr>
 
-          <tr data-tip="Define the maximum number of empires to generate">
+          <tr data-tip="Empire consolidation ratio (1 = many small empires, 100 = few large empires)">
             <td>
               <i data-locked="0" id="lock_empiresNumber" class="icon-lock-open"></i>
             </td>
-            <td>Empires number</td>
+            <td>Empires ratio</td>
             <td colspan="2">
-              <slider-input id="empiresNumber" data-stored="empiresNumber" min="0" max="20"></slider-input>
+              <slider-input id="empiresNumber" data-stored="empiresNumber" min="1" max="100"></slider-input>
             </td>
           </tr>
 
-          <tr data-tip="Define percentage of duchies grouped into kingdoms">
+          <tr data-tip="Kingdom consolidation ratio (1 = many small kingdoms, 100 = few large kingdoms)">
             <td>
               <i data-locked="0" id="lock_kingdomsRatio" class="icon-lock-open"></i>
             </td>
             <td>Kingdoms ratio</td>
             <td colspan="2">
-              <slider-input id="kingdomsRatio" data-stored="kingdomsRatio" min="0" max="100"></slider-input>
+              <slider-input id="kingdomsRatio" data-stored="kingdomsRatio" min="1" max="100"></slider-input>
             </td>
           </tr>
 
-          <tr data-tip="Define how many duchies and capitals should be generated">
+          <tr data-tip="Duchies density ratio (1 = few duchies, 100 = many duchies)">
             <td>
               <i data-locked="0" id="lock_statesNumber" class="icon-lock-open"></i>
             </td>
             <td>Duchies ratio</td>
             <td colspan="2">
-              <slider-input id="statesNumber" data-stored="statesNumber" min="0" max="100"></slider-input>
+              <slider-input id="statesNumber" data-stored="statesNumber" min="1" max="100"></slider-input>
             </td>
           </tr>
 
-          <tr data-tip="Define percentage of baronies grouped into counties">
+          <tr data-tip="Percentage of burgs that become county seats (1 = minimal counties, 100 = one county per burg)">
             <td>
               <i data-locked="0" id="lock_countiesRatio" class="icon-lock-open"></i>
             </td>
             <td>Counties ratio</td>
             <td colspan="2">
-              <slider-input id="countiesRatio" data-stored="countiesRatio" min="0" max="100"></slider-input>
+              <slider-input id="countiesRatio" data-stored="countiesRatio" min="1" max="100"></slider-input>
             </td>
           </tr>
 
-          <tr data-tip="Define burgs percentage to form a separate barony">
+          <tr data-tip="Percentage of burgs that become barony seats; at 100 province growth is uncapped">
             <td>
               <i data-locked="0" id="lock_provincesRatio" class="icon-lock-open"></i>
             </td>
             <td>Baronies ratio</td>
             <td colspan="2">
-              <slider-input id="provincesRatio" data-stored="provincesRatio" min="0" max="100"></slider-input>
+              <slider-input id="provincesRatio" data-stored="provincesRatio" min="1" max="100"></slider-input>
             </td>
           </tr>
 
@@ -1791,8 +1791,8 @@
           <button id="overviewRoutesButton" data-tip="Click to open Routes Overview" data-shortcut="Shift + U">
             Routes
           </button>
-          <button id="editStatesButton" data-tip="Click to open States Editor" data-shortcut="Shift + S">
-            States
+          <button id="editStatesButton" data-tip="Click to open Duchies Editor" data-shortcut="Shift + S">
+            Duchies
           </button>
           <button id="editUnitsButton" data-tip="Click to open Units Editor" data-shortcut="Shift + Q">Units</button>
           <button id="editZonesButton" data-tip="Click to open Zones Editor" data-shortcut="Shift + Z">Zones</button>

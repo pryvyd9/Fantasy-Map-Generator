@@ -635,12 +635,19 @@ function toggleKingdoms(event) {
 
 function drawKingdoms() {
   TIME && console.time("drawKingdoms");
-  const {states, kingdoms} = pack;
+  const {states, kingdoms, provinces, counties} = pack;
   if (!kingdoms?.length) return;
 
   const getKingdomId = cellId => {
     const s = pack.cells.state[cellId];
-    return s ? (states[s]?.kingdom || 0) : 0;
+    if (s) return states[s]?.kingdom || 0;
+    // neutral cell: fall back through province→county→state→kingdom
+    const p = pack.cells.province[cellId];
+    if (!p) return 0;
+    const county = provinces[p]?.county;
+    if (!county) return 0;
+    const cs = counties[county]?.state;
+    return cs ? (states[cs]?.kingdom || 0) : 0;
   };
 
   const bodyPaths = new Array(kingdoms.length - 1);
@@ -673,13 +680,23 @@ function toggleEmpires(event) {
 
 function drawEmpires() {
   TIME && console.time("drawEmpires");
-  const {states, kingdoms, empires} = pack;
+  const {states, kingdoms, empires, provinces, counties} = pack;
   if (!empires?.length) return;
 
   const getEmpireId = cellId => {
     const s = pack.cells.state[cellId];
-    if (!s) return 0;
-    const k = states[s]?.kingdom;
+    if (s) {
+      const k = states[s]?.kingdom;
+      return k ? (kingdoms[k]?.empire || 0) : 0;
+    }
+    // neutral cell: fall back through province→county→state→kingdom→empire
+    const p = pack.cells.province[cellId];
+    if (!p) return 0;
+    const county = provinces[p]?.county;
+    if (!county) return 0;
+    const cs = counties[county]?.state;
+    if (!cs) return 0;
+    const k = states[cs]?.kingdom;
     return k ? (kingdoms[k]?.empire || 0) : 0;
   };
 

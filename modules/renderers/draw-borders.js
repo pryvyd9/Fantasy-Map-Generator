@@ -19,90 +19,110 @@ function drawBorders() {
   };
   const getKingdom = cellId => {
     const s = cells.state[cellId];
-    return s ? (pack.states[s]?.kingdom || 0) : 0;
+    if (s) return pack.states[s]?.kingdom || 0;
+    // neutral cell: fall back through province→county→state→kingdom
+    const p = cells.province[cellId];
+    if (!p) return 0;
+    const county = pack.provinces[p]?.county;
+    if (!county) return 0;
+    const cs = pack.counties[county]?.state;
+    return cs ? (pack.states[cs]?.kingdom || 0) : 0;
   };
   const getEmpire = cellId => {
     const s = cells.state[cellId];
-    if (!s) return 0;
-    const k = pack.states[s]?.kingdom;
+    if (s) {
+      const k = pack.states[s]?.kingdom;
+      return k ? (pack.kingdoms[k]?.empire || 0) : 0;
+    }
+    // neutral cell: fall back through province→county→state→kingdom→empire
+    const p = cells.province[cellId];
+    if (!p) return 0;
+    const county = pack.provinces[p]?.county;
+    if (!county) return 0;
+    const cs = pack.counties[county]?.state;
+    if (!cs) return 0;
+    const k = pack.states[cs]?.kingdom;
     return k ? (pack.kingdoms[k]?.empire || 0) : 0;
   };
 
   for (let cellId = 0; cellId < cells.i.length; cellId++) {
-    if (!cells.state[cellId]) continue;
-    const provinceId = cells.province[cellId];
     const stateId = cells.state[cellId];
+    if (!stateId && !cells.province[cellId]) continue; // skip cells with no state and no province
+    const provinceId = cells.province[cellId];
 
-    // bordering cell of another province
-    if (provinceId) {
-      const provToCell = cells.c[cellId].find(neibId => {
-        const neibProvinceId = cells.province[neibId];
-        return (
-          neibProvinceId &&
-          provinceId > neibProvinceId &&
-          !checked[`prov-${provinceId}-${neibProvinceId}-${cellId}`] &&
-          cells.state[neibId] === stateId
-        );
+    // province, county, and state borders only apply to cells with a state
+    if (stateId) {
+      // bordering cell of another province
+      if (provinceId) {
+        const provToCell = cells.c[cellId].find(neibId => {
+          const neibProvinceId = cells.province[neibId];
+          return (
+            neibProvinceId &&
+            provinceId > neibProvinceId &&
+            !checked[`prov-${provinceId}-${neibProvinceId}-${cellId}`] &&
+            cells.state[neibId] === stateId
+          );
+        });
+
+        if (provToCell !== undefined) {
+          const addToChecked = cellId => (checked[`prov-${provinceId}-${cells.province[provToCell]}-${cellId}`] = true);
+          const border = getBorder({type: "province", fromCell: cellId, toCell: provToCell, addToChecked});
+
+          if (border) {
+            provincePath.push(border);
+            cellId--; // check the same cell again
+            continue;
+          }
+        }
+      }
+
+      // if cell is on county border
+      const countyId = getCounty(cellId);
+      if (countyId) {
+        const countyToCell = cells.c[cellId].find(neibId => {
+          const neibCounty = getCounty(neibId);
+          return (
+            neibCounty &&
+            countyId > neibCounty &&
+            !checked[`county-${countyId}-${neibCounty}-${cellId}`] &&
+            cells.state[neibId] === stateId
+          );
+        });
+
+        if (countyToCell !== undefined) {
+          const neibCounty = getCounty(countyToCell);
+          const addToChecked = id => (checked[`county-${countyId}-${neibCounty}-${id}`] = true);
+          // Treat cells outside the current state or without a county as the "neibCounty" side so
+          // the border trace extends to the state boundary rather than stopping short of it.
+          const getCountyBounded = cell => {
+            const c = getCounty(cell);
+            return c !== 0 && cells.state[cell] === stateId ? c : neibCounty;
+          };
+          const border = getBorder({fromCell: cellId, toCell: countyToCell, addToChecked, getTypeFn: getCountyBounded});
+
+          if (border) {
+            countyPath.push(border);
+            cellId--;
+            continue;
+          }
+        }
+      }
+
+      // if cell is on state border
+      const stateToCell = cells.c[cellId].find(neibId => {
+        const neibStateId = cells.state[neibId];
+        return isLand(neibId) && stateId > neibStateId && !checked[`state-${stateId}-${neibStateId}-${cellId}`];
       });
 
-      if (provToCell !== undefined) {
-        const addToChecked = cellId => (checked[`prov-${provinceId}-${cells.province[provToCell]}-${cellId}`] = true);
-        const border = getBorder({type: "province", fromCell: cellId, toCell: provToCell, addToChecked});
+      if (stateToCell !== undefined) {
+        const addToChecked = cellId => (checked[`state-${stateId}-${cells.state[stateToCell]}-${cellId}`] = true);
+        const border = getBorder({type: "state", fromCell: cellId, toCell: stateToCell, addToChecked});
 
         if (border) {
-          provincePath.push(border);
+          statePath.push(border);
           cellId--; // check the same cell again
           continue;
         }
-      }
-    }
-
-    // if cell is on county border
-    const countyId = getCounty(cellId);
-    if (countyId) {
-      const countyToCell = cells.c[cellId].find(neibId => {
-        const neibCounty = getCounty(neibId);
-        return (
-          neibCounty &&
-          countyId > neibCounty &&
-          !checked[`county-${countyId}-${neibCounty}-${cellId}`] &&
-          cells.state[neibId] === stateId
-        );
-      });
-
-      if (countyToCell !== undefined) {
-        const neibCounty = getCounty(countyToCell);
-        const addToChecked = id => (checked[`county-${countyId}-${neibCounty}-${id}`] = true);
-        // Treat cells outside the current state or without a county as the "neibCounty" side so
-        // the border trace extends to the state boundary rather than stopping short of it.
-        const getCountyBounded = cell => {
-          const c = getCounty(cell);
-          return c !== 0 && cells.state[cell] === stateId ? c : neibCounty;
-        };
-        const border = getBorder({fromCell: cellId, toCell: countyToCell, addToChecked, getTypeFn: getCountyBounded});
-
-        if (border) {
-          countyPath.push(border);
-          cellId--;
-          continue;
-        }
-      }
-    }
-
-    // if cell is on state border
-    const stateToCell = cells.c[cellId].find(neibId => {
-      const neibStateId = cells.state[neibId];
-      return isLand(neibId) && stateId > neibStateId && !checked[`state-${stateId}-${neibStateId}-${cellId}`];
-    });
-
-    if (stateToCell !== undefined) {
-      const addToChecked = cellId => (checked[`state-${stateId}-${cells.state[stateToCell]}-${cellId}`] = true);
-      const border = getBorder({type: "state", fromCell: cellId, toCell: stateToCell, addToChecked});
-
-      if (border) {
-        statePath.push(border);
-        cellId--; // check the same cell again
-        continue;
       }
     }
 

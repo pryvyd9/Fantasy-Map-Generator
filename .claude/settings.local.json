@@ -3,7 +3,12 @@
     "allow": [
       "Bash(for f:*)",
       "Bash(python3 -c \":*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(find /g/repos/Fantasy-Map-Generator -type f -name \"*.js\" -exec grep -l \"domain\" {} \\\\;)",
+      "Bash(grep -r \"domains\\\\|subdomains\" /g/repos/Fantasy-Map-Generator/*.html)",
+      "Bash(grep -n \"closeStatesEditor\\\\|closeKingdomsEditor\\\\|closeCountiesEditor\\\\|closeEmpiresEditor\" /media/pavlo/D4DC2DD8DC2DB620/repos/Fantasy-Map-Generator/modules/dynamic/editors/*.js)",
+      "Bash(grep -n \"function editStates\\\\|export.*editStates\" /media/pavlo/D4DC2DD8DC2DB620/repos/Fantasy-Map-Generator/modules/**/*.js)",
+      "Bash(grep -n \"addListeners\\\\|applySortingByHeader\" /media/pavlo/D4DC2DD8DC2DB620/repos/Fantasy-Map-Generator/modules/dynamic/editors/*.js)"
     ]
   }
 }

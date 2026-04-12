@@ -1,0 +1,42 @@
+Fix ownership of ~/.pi (created by Docker as root):
+
+
+sudo chown -R pavlo:pavlo ~/.pi
+Create ~/.pi/agent/models.json for the Ollama provider:
+
+
+mkdir -p ~/.pi/agent
+cat > ~/.pi/agent/models.json << 'EOF'
+{
+  "providers": {
+    "ollama": {
+      "baseUrl": "http://localhost:11434/v1",
+      "api": "openai-completions",
+      "apiKey": "ollama",
+      "compat": {
+        "supportsDeveloperRole": false,
+        "supportsReasoningEffort": false
+      },
+      "models": [
+        { "id": "qwen3.5-64k:latest" }
+      ]
+    }
+  }
+}
+EOF
+Run the container mounting ~/.pi:
+
+
+docker run -it \
+  --network host \
+  -v /media/pavlo/D4DC2DD8DC2DB620/repos/Fantasy-Map-Generator:/app \
+  -v ~/.pi:/root/.pi \
+  -w /app \
+  --rm \
+  pi-agent \
+  sh -c "pi --provider ollama --model qwen3.5-64k:latest"
+Key notes:
+
+Pi ignores OPENAI_API_BASE/OPENAI_BASE_URL env vars — config must be in models.json
+--network host is what lets the container reach Ollama on localhost:11434
+The ownership issue will recur if you ever run the container without -v ~/.pi:/root/.pi (Docker will recreate .pi as root)

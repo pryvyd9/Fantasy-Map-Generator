@@ -30,7 +30,8 @@ window.Counties = (function () {
 
       if (!stateBurgs.length) return;
 
-      const countiesCount = Math.max(Math.ceil((stateBurgs.length * countiesRatio) / 100), 1);
+      const minCounties = stateBurgs.length >= 2 ? 2 : 1;
+      const countiesCount = Math.max(Math.ceil((stateBurgs.length * countiesRatio) / 100), minCounties);
       const seeds = stateBurgs.slice(0, countiesCount);
 
       // Assign every burg in this state to the nearest seed by cell-distance

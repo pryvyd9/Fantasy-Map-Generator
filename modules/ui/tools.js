@@ -184,7 +184,7 @@ function recreateStates() {
 
   const statesCount = +byId("statesNumber").value;
   if (!statesCount) {
-    tip(`<i>States Number</i> option value is zero. No counties are generated`, false, "error");
+    tip(`<i>Duchies Ratio</i> option value is zero. No counties are generated`, false, "error");
     return null;
   }
 
